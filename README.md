@@ -25,3 +25,5 @@ Sebastian G  | Ss215786
 Tobias M | S215778
 
 ------------------------
+
+"CDIO 3" is created for the course ["CDIO-Project" (62410)](https://kurser.dtu.dk/course/62410)
