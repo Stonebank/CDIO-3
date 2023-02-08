@@ -21,7 +21,7 @@ Participant  | StudentId
 Elias R  | s215817
 Hassan K | S205409
 Oscar M. B  | S215779
-Sebastian G  | Ss215786
+Sebastian G  | S215786
 Sebastian H. L | s215769
 Tobias M | S215778
 
