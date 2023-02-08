@@ -18,7 +18,7 @@ YET TO BE DECIDED
 
 Participant  | StudentId
 ------------- | -------------
-Elias R  | s215817
+Elias R  | S215817
 Hassan K | S205409
 Oscar M. B  | S215779
 Sebastian G  | S215786
