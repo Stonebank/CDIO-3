@@ -1,7 +1,6 @@
 # CDIO 3
 
-The scope of the project is to develop an automated robot that can navigate through a golf course, locate golf balls, extract them, and deliver them to a specified location.
-The goal is to make the robot as fast and efficient as possible. 
+The objective of the project is to design a robot that can automatically traverse a golf course, identify golf balls, pick them up, and bring them to a designated spot. The aim is to make the robot perform this task quickly and effectively.
 
 # Setup and run
 
