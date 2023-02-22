@@ -1,28 +1,23 @@
-import cv2 as cv
+import cv2
 
-cam = cv.VideoCapture(0)
+cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
-print("Entering while loop")
-while(True):
-    print("1")
-    ##if not cam.isOpened():
-    ##    print("Cannot open camera")
-    ##    exit()
-    # Capture the video frame
-    # by frame
-    ret, frame = cam.read()
-    print("2")
-    # Display the resulting frame
-    cv.imshow('frame', frame)
+if not cap.isOpened():
+    print("Cannot open camera")
+    exit()
 
-    # the 'q' button is set as the
-    # quitting button you may use any
-    # desired button of your choiceq
-    print("3")
-    if cv.waitKey(1) & 0xFF == ord('q'):
+while True:
+    ret, frame = cap.read()
+
+    if not ret:
         break
 
-# After the loop release the cap object
-cam.release()
-# Destroy all the windows
-cv.destroyAllWindows()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    cv2.imshow('Frame', gray)
+
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
