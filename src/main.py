@@ -16,6 +16,9 @@ from modules.basic_movement import Movement
 # Create your objects here.
 ev3 = EV3Brick()
 
+# Create instance of class
+movement = Movement()
+
 # Initialize the motors.
 left_motor = Motor(Port.B)
 right_motor = Motor(Port.C)
@@ -24,29 +27,14 @@ right_motor = Motor(Port.C)
 robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 
 # Go forward and backwards for one meter.
-robot.straight(1000)
-ev3.speaker.beep()
-
-robot.straight(-1000)
-ev3.speaker.beep()
-
-# Turn clockwise by 360 degrees and back again.
-robot.turn(360)
-ev3.speaker.beep()
-
-robot.turn(-360)
-ev3.speaker.beep()
-
-# Create instance of class
-movement = Movement()
+# Go forwards and turn 180
+movement.drive_forwards(ev3, robot, 1000)
+    
+movement.turn_right(ev3, robot, 180)
 
 # Go forwards and turn 180
-movement.drive_forwards(ev3, robot)
-movement.turn_right_180()
-
-# Go forwards and turn 180
-movement.drive_forwards()
-movement.turn_right_180()
+movement.turn_right(ev3, robot, -180)
+movement.drive_forwards(ev3, robot, -1000)
 
 
 

@@ -9,11 +9,11 @@ from pybricks.tools import DataLog, StopWatch, wait
 
 class Movement:
 
-    def drive_forwards(ev3: EV3Brick, robot: DriveBase):
+    def drive_forwards(self, ev3, robot, distance):
 
-        robot.straight(1000)
+        robot.straight(distance)
         ev3.speaker.beep()
 
-    def turn_right_180(ev3: EV3Brick, robot: DriveBase):
-        robot.turn(180)
+    def turn_right(self, ev3, robot, degrees):
+        robot.turn(degrees)
         ev3.speaker.beep()
