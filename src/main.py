@@ -50,8 +50,8 @@ def main():
     '''The main function of our program'''
     for x in range(5):
         print('Rotating...')
-        rotate.on_for_rotations(SpeedPercent(50), 5)
-        tank.on_for_rotations(50, 50, 5)
+        rotate.on_for_rotations(SpeedPercent(-50), 5)
+        #tank.on_for_rotations(50, 50, 5)
     # set the console just how we want it
     #reset_console()
     #set_cursor(OFF)
