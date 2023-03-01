@@ -1,20 +1,19 @@
-#!/usr/bin/env pybricks-micropython
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.parameters import Port, Stop, Direction, Button, Color
-from pybricks.tools import wait, StopWatch, DataLog
-from pybricks.robotics import DriveBase
-from pybricks.media.ev3dev import SoundFile, ImageFile
+from ev3dev2.motor import LargeMotor, OUTPUT_C, OUTPUT_B, SpeedPercent 
+from ev3dev2.sensor import INPUT_1 
+from ev3dev2.sensor.lego import InfraredSensor 
 
+# Connect infrared and motor sensors to the EV3 brick 
+ir = InfraredSensor(INPUT_1) 
+motorLeft = LargeMotor(OUTPUT_B) 
+motorRight = LargeMotor(OUTPUT_C) 
 
-# This program requires LEGO EV3 MicroPython v2.0 or higher.
-# Click "Open user guide" on the EV3 extension tab for more information.
+ # Start moving forward at a speed of 25%  
+motorLeft.run_forever(speed_sp=25)  
+motorRight.run_forever(speed_sp=25)  
 
+ # Check if the wall is detected by the infrared sensor  
+while not ir.proximity < 30:  
 
-# Create your objects here.
-ev3 = EV3Brick()
-
-
-# Write your program here.
-ev3.speaker.beep()
+    # If the wall is detected, turn right and continue moving forward  
+    motorLeft.run_forever(speed_sp=-50)  
+    motorRight.run_forever(speed_sp=50)
