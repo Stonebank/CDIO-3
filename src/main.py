@@ -1,40 +1,65 @@
-#!/usr/bin/env pybricks-micropython
-from pybricks.ev3devices import (ColorSensor, GyroSensor, InfraredSensor,
-                                 Motor, TouchSensor, UltrasonicSensor)
-from pybricks.hubs import EV3Brick
-from pybricks.media.ev3dev import ImageFile, SoundFile
-from pybricks.parameters import Button, Color, Direction, Port, Stop
-from pybricks.robotics import DriveBase
-from pybricks.tools import DataLog, StopWatch, wait
+#!/usr/bin/env python3
+'''Hello to the world from ev3dev.org'''
 
-from modules.basic_movement import Movement
+import os
+import sys
+import time
 
-# This program requires LEGO EV3 MicroPython v2.0 or higher.
-# Click "Open user guide" on the EV3 extension tab for more information.
+from ev3dev2.led import Leds
+from ev3dev2.motor import (OUTPUT_A, OUTPUT_B, LargeMotor, MoveTank,
+                           SpeedPercent)
+from ev3dev2.sensor import INPUT_1
+from ev3dev2.sensor.lego import TouchSensor
 
-
-# Create your objects here.
-ev3 = EV3Brick()
-
-# Create instance of class
-movement = Movement()
-
-# Initialize the motors.
-left_motor = Motor(Port.B)
-right_motor = Motor(Port.C)
-
-# Initialize the drive base.
-robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
-
-# Go forward and backwards for one meter.
-# Go forwards and turn 180
-movement.drive_forwards(ev3, robot, 1000)
-    
-movement.turn_right(ev3, robot, 180)
-
-# Go forwards and turn 180
-movement.turn_right(ev3, robot, -180)
-movement.drive_forwards(ev3, robot, -1000)
+# state constants
+ON = True
+OFF = False
 
 
+def debug_print(*args, **kwargs):
+    '''Print debug messages to stderr.
+    This shows up in the output panel in VS Code.
+    '''
+    print(*args, **kwargs, file=sys.stderr)
 
+
+def reset_console():
+    '''Resets the console to the default state'''
+    print('\x1Bc', end='')
+
+
+def set_cursor(state):
+    '''Turn the cursor on or off'''
+    if state:
+        print('\x1B[?25h', end='')
+    else:
+        print('\x1B[?25l', end='')
+
+
+def set_font(name):
+    '''Sets the console font
+    A full list of fonts can be found with `ls /usr/share/consolefonts`
+    '''
+    os.system('setfont ' + name)
+
+
+def main():
+    '''The main function of our program'''
+
+    # set the console just how we want it
+    reset_console()
+    set_cursor(OFF)
+    set_font('Lat15-Terminus24x12')
+
+    # print something to the screen of the device
+    print('Hello World!')
+
+    # print something to the output panel in VS Code
+    debug_print('Hello VS Code!')
+
+    # wait a bit so you have time to look at the display before the program
+    # exits
+    time.sleep(5)
+
+if __name__ == '__main__':
+    main()
