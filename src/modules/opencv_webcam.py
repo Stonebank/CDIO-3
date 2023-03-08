@@ -3,6 +3,14 @@ import numpy as np
 
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
+lower_red = np.array([0, 0, 200], dtype = "uint8") 
+
+upper_red= np.array([100, 100, 255], dtype = "uint8")
+
+lower_white = np.array([200, 200, 200], dtype = "uint8") 
+
+upper_white= np.array([255, 255, 255], dtype = "uint8")
+
 while True:
 
     ret, frame = cap.read()
@@ -13,7 +21,19 @@ while True:
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    cv2.imshow("Blur", gray)
+    whiteMask = cv2.inRange(frame, lower_white, upper_white)
+
+    redMask = cv2.inRange(frame, lower_red, upper_red)
+
+    detected_output_red = cv2.bitwise_and(frame, frame, mask = redMask) 
+
+    detected_output_white = cv2.bitwise_and(frame, frame, mask = whiteMask) 
+
+    cv2.imshow("red color detection", detected_output_red) 
+
+    cv2.imshow("white color detection", detected_output_white) 
+    
+    '''cv2.imshow("Blur", gray)
 
     bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 51, 10)
 
@@ -56,7 +76,7 @@ while True:
 
                 if mean[2] > 50:
                     cv2.putText(frame, str(x - r) + " " + str(y - r), (x - r, y - r - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
-                    cv2.rectangle(frame, (x - r, y - r), (x + r, y + r), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (x - r, y - r), (x + r, y + r), (0, 255, 0), 2)'''
 
     cv2.imshow("Ping pong detection", frame)
     
