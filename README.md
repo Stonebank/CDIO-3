@@ -15,14 +15,14 @@ YET TO BE DECIDED
 
 # Developer team
 
-Participant  | StudentId
-------------- | -------------
-Elias R  | S215817
-Hassan K | S205409
-Oscar M. B  | S215779
-Sebastian G  | S215786
-Sebastian H. L | s215769
-Tobias M | S215778
+Participant  | StudentId | Github username
+------------- | ------------- | ------------
+Elias R  | S215817 | eliasrajabi
+Hassan K | S205409 | Stonebank / HKTatesoft
+Oscar M. B  | S215779 | TODO
+Sebastian G  | S215786 | TODO
+Sebastian H. L | s215769 | TODO
+Tobias M | S215778 | TODO
 
 ------------------------
 
