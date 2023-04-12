@@ -19,10 +19,10 @@ Participant  | StudentId | Github username
 ------------- | ------------- | ------------
 Elias R  | S215817 | eliasrajabi
 Hassan K | S205409 | Stonebank / HKTatesoft
-Oscar M. B  | S215779 | TODO
-Sebastian G  | S215786 | TODO
-Sebastian H. L | s215769 | TODO
-Tobias M | S215778 | TODO
+Oscar M. B  | S215779 | OscarMaxwell
+Sebastian G  | S215786 | sngp32
+Sebastian H. L | s215769 | SebastianHalfdanLauridsen
+Tobias M | S215778 | TobyMayn
 
 ------------------------
 
