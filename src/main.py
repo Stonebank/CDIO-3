@@ -7,9 +7,12 @@ from frameProvider import FrameTransformer
 
 
 class Main:
+
+    robotX, robotY, robotWidth, robotHeight = 0, 0, 0, 0
+
     def __init__(self):
         # Set video input
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         ft = FrameTransformer()
         frameCount = 0
 
@@ -55,6 +58,9 @@ class Main:
             radius = w/2
             if (radius > 9 or radius < 6):
                 continue
+            # filter if the robotX, robotY, robotWidth, robotHeight is in the ball area
+            if  x > self.robotX and x < self.robotX + self.robotWidth and y > self.robotY and y < self.robotY + self.robotHeight :
+                continue
             cv2.putText(frame, "x: {}, y: {}, r: {}".format(int(x+w/2), int(y+h/2),
                         int(w/2)), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
             cv2.circle(frame, (int(x + w / 2), int(y + h/2)),
@@ -84,8 +90,12 @@ class Main:
         #  cheack for big Green area
         if len(rectangleContours) > 0:
             maxGreenArea = max(rectangleContours, key=cv2.contourArea)
-            x, y, w, h = cv2.boundingRect(maxGreenArea)
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
+            robotX, robotY, robotWidth, robotHeight = cv2.boundingRect(maxGreenArea)
+            self.robotX = robotX - 70
+            self.robotY = robotY - 70
+            self.robotWidth = robotWidth + 130
+            self.robotHeight = robotHeight + 130
+            cv2.rectangle(frame, (self.robotX, self.robotY), (self.robotX+self.robotWidth, self.robotY+self.robotHeight), (0, 255, 0), 3)
         
 
 
