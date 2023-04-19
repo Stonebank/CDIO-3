@@ -9,7 +9,7 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = ([0,0],[750,0],[0,500],[750,500])
-    goals = ([0,250],[750,250])
+    goals = [[0,250],[750,250]]
     
 
     def __init__(self):
@@ -18,6 +18,8 @@ class FrameTransformer:
     def transform(self, frame, frameCount):
         if (not self.manMode and frameCount%20==0):
             self.corners = self.getCorners(frame)
+            self.goals[0] = self.getGoals(self.corners[0], self.corners[2])
+            self.goals[1] = self.getGoals(self.corners[1], self.corners[3])
 
         if (self.corners != None):
             # Coordinates for the corners
@@ -34,12 +36,12 @@ class FrameTransformer:
             transformed = cv2.warpPerspective(
                 frame, matrix, (self.width, self.height))
             # Create circles to indicate detected corners and goals 
-            frame = cv2.circle(frame, tuple(self.corners[0]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.corners[1]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.corners[2]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.corners[3]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[0]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[1]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.corners[0], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.corners[1], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.corners[2], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.corners[3], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.goals[0], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, self.goals[1], 20, (255, 0, 0), 2)
             return transformed
 
     def get_point(self, event, x, y, flags, param):
@@ -117,3 +119,9 @@ class FrameTransformer:
                         lower_right[0] = i
                         lower_right[1] = j
         return [upper_left, upper_right, lower_left, lower_right]
+    
+    def getGoals(self, topCorner, botCorner):
+        x = int ((topCorner[0] - botCorner[0]) / 2)
+        y = int ((topCorner[1] - botCorner[1]) / 2)
+        
+        return [x, y]
