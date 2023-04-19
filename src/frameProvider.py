@@ -9,6 +9,7 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = ([0,0],[750,0],[0,500],[750,500])
+    goals = ([0,250],[750,250])
     
 
     def __init__(self):
@@ -37,6 +38,8 @@ class FrameTransformer:
             frame = cv2.circle(frame, tuple(self.corners[1]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(self.corners[2]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(self.corners[3]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.goals[0]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.goals[1]), 20, (255, 0, 0), 2)
             return transformed
 
     def get_point(self, event, x, y, flags, param):
@@ -45,17 +48,29 @@ class FrameTransformer:
             
             self.selectCount += 1
             if (self.selectCount == 1):
+                print("Select Upper left corner")
                 self.corners[0] = [x, y]
                 print("Upper left(", x, ",", y, ")")
             elif (self.selectCount == 2):
+                print("Select Upper right corner")
                 self.corners[1] = [x, y]
                 print("Upper right(", x, ",", y, ")")
             elif (self.selectCount == 3):
+                print("Select lower left corner")
                 self.corners[2] = [x, y]
                 print("Lower left(", x, ",", y, ")")
             elif (self.selectCount == 4):
+                print("Select lower right corner")
                 self.corners[3] = [x, y]
                 print("Lower right(", x, ",", y, ")")
+            elif (self.selectCount == 5):
+                print("Select left goal")
+                self.goals[0] = [x, y]
+                print("Left goal(", x, ",", y, ")")
+            elif (self.selectCount == 6):
+                print("Select right goal")
+                self.goals[1] = [x, y]
+                print("Right goal(", x, ",", y, ")")
                 self.selectCount = 0
 
     def getCorners(self, frame):
