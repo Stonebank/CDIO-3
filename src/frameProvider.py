@@ -33,7 +33,7 @@ class FrameTransformer:
                 oldCoordinates, newCoordinates)
             transformed = cv2.warpPerspective(
                 frame, matrix, (self.width, self.height))
-            # Create circles to indicate detected corners
+            # Create circles to indicate detected corners and goals 
             frame = cv2.circle(frame, tuple(self.corners[0]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(self.corners[1]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(self.corners[2]), 20, (255, 0, 0), 2)
