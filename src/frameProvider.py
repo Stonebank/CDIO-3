@@ -18,7 +18,7 @@ class FrameTransformer:
     def transform(self, frame, frameCount):
         if (not self.manMode and frameCount%20==0):
             self.corners = self.getCorners(frame)
-            self.goals = self.getGoals(self.corners[0], self.corners[1], self.corners[2], self.corners[3])
+            self.goals = self.getGoals(self.corners)
 
         if (self.corners != None):
             # Coordinates for the corners
@@ -119,9 +119,13 @@ class FrameTransformer:
                         lower_right[1] = j
         return [upper_left, upper_right, lower_left, lower_right]
     
-    def getGoals(self, upper_left, upper_right, lower_left, lower_right):
+    def getGoals(self, corners):
         goal_left = [0, 99999]
         goal_right = [99999, 0]
+        upper_left = corners[0]
+        upper_right = corners[1]
+        lower_left = corners[2]
+        lower_right = corners[3]
     
         goal_left[0] = int ((upper_left[0] + lower_left[0]) / 2)
         goal_left[1] = int ((upper_left[1] + lower_left[1]) / 2)
