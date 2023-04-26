@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import keyboard
 from ball import Ball
-from detection import detectBalls, detectRobot, drawLine, getDistance
+from detection import detectBalls, detectBlueFrame, detectRobot, drawLine, getDistance
 
 from frameProvider import FrameTransformer
 from remoteControl import Remote
@@ -35,22 +35,24 @@ class Main:
             ret, frame = cap.read()
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
-            
+
             robot = detectRobot(transformed)
+            blueFrame = detectBlueFrame(transformed)
             balls = detectBalls(transformed, robot)
 
             # Find closest ball
             if balls and robot:
                 closestBall = balls[0]
-                closestDistance = getDistance(robot.x, robot.y, closestBall.x, closestBall.y)
-                for ball in balls :
+                closestDistance = getDistance(
+                    robot.x, robot.y, closestBall.x, closestBall.y)
+                for ball in balls:
                     distance = getDistance(robot.x, robot.y, ball.x, ball.y)
-                    if distance < closestDistance :
+                    if distance < closestDistance:
                         closestBall = ball
                         closestDistance = distance
-    
-                drawLine(transformed,robot.x, robot.y, closestBall.x, closestBall.y)
 
+                drawLine(transformed, blueFrame[0], blueFrame[1],
+                         closestBall.x, closestBall.y)
 
             cv2.imshow("Transformed", transformed)
             cv2.imshow("Board", frame)
@@ -70,6 +72,7 @@ class Main:
             print("MANUAL MODE - input corners")
         elif (self.ft.manMode):
             self.ft.manMode = False
+            self.ft.selectCount = 0
             print("AUTO MODE")
 
 

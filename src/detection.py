@@ -56,13 +56,28 @@ def detectRobot(frame):
     if len(contours) > 0:
         greenArea = max(contours, key=cv2.contourArea)
         robotX, robotY, robotW, robotH = cv2.boundingRect(greenArea)
+
+        rect = cv2.minAreaRect(greenArea)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        # Compute the center of the box
+        center = np.mean(box, axis=0)
+
+        # Scale the box vertices along the x and y axis separately
+        scale_factor_x = 4
+        scale_factor_y = 2
+        scaled_box = np.zeros_like(box)
+        scaled_box[:, 0] = center[0] + scale_factor_x * (box[:, 0] - center[0])
+        scaled_box[:, 1] = center[1] + scale_factor_y * (box[:, 1] - center[1])
+        
         rX = robotX - 70
         rY = robotY - 70
         rW = robotW + 130
         rH = robotH + 130
         if robotX > rX and robotX < rX + rW and robotY > rY and robotY < rY + rH:
-            cv2.rectangle(frame, (rX, rY), (rX + rW, rY + rH), (0, 255, 0), 2)
-        return Robot(rX, rY, rH, rW)
+            # Draw the scaled box on the image
+            cv2.drawContours(frame, [np.int0(scaled_box)], 0, (0, 255, 0), 3)
+        return Robot(center[0], center[1], robotH, robotW)
 
 
 def detectBlueFrame(frame):
@@ -84,6 +99,9 @@ def detectBlueFrame(frame):
         box = np.int0(box)
 
         cv2.drawContours(frame, [box], 0, (0, 255, 0), 3)
+        # Compute the center of the box
+        center = np.mean(box, axis=0)
+        return center
 
 
 def drawLine(frame, x1, y1, x2, y2):
