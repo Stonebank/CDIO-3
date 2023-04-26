@@ -8,7 +8,7 @@ class FrameTransformer:
     # Field dimensions
     width = 750
     height = 500
-    corners = ([0,0],[750,0],[0,500],[750,500])
+    corners = [[0,0],[750,0],[0,500],[750,500]]
     goals = [[0,250],[750,250]]
     
 
@@ -35,12 +35,12 @@ class FrameTransformer:
             transformed = cv2.warpPerspective(
                 frame, matrix, (self.width, self.height))
             # Create circles to indicate detected corners and goals 
-            frame = cv2.circle(frame, self.corners[0], 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, self.corners[1], 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, self.corners[2], 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, self.corners[3], 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, self.goals[0], 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, self.goals[1], 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.corners[0]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.corners[1]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.corners[2]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.corners[3]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.goals[0]), 20, (255, 0, 0), 2)
+            frame = cv2.circle(frame, tuple(self.goals[1]), 20, (255, 0, 0), 2)
             return transformed
 
     def get_point(self, event, x, y, flags, param):
