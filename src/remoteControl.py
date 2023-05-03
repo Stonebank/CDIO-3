@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import rpyc
+import math
 
+import rpyc
 
 
 class Remote:
@@ -48,6 +49,11 @@ class Remote:
     
     def go_back_rotations(self):
         self.tank.on_for_rotations(-50, -50, 1)
+    
+    def go_forward_distance(self, distance):
+        wheel_size = 30
+        rotations = math.ceil((distance/wheel_size))
+        self.tank.on_for_rotations(50, 50, rotations)
 
 
     def go_backwards(self):
