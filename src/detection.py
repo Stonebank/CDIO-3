@@ -9,30 +9,34 @@ def detectBalls(frame, robot):
 
     balls = []
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 218,
+                  'hmax': 179, 'smax': 67, 'vmax': 255}
 
-    lower_white = np.array([200, 200, 200], dtype="uint8")
-    upper_white = np.array([255, 255, 255], dtype="uint8")
+    hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
+    hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
 
-    white_mask = cv2.inRange(frame, lower_white, upper_white)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    contours, hierarchy = cv2.findContours(
-        white_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    lower_range = np.array([hmin, smin, vmin])
+    upper_range = np.array([hmax, smax, vmax])
 
-    for contour in contours:
-        (x, y, w, h) = cv2.boundingRect(contour)
-        radius = w / 2
-        if radius > 9 or radius < 7:
-            continue
-        if robot:
-            # filter if the robotX, robotY, robotWidth, robotHeight is in the ball area
-            if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
-                continue
-        balls.append(Ball(x + radius / 2, y + radius / 2, radius, len(balls)))
+    mask = cv2.inRange(hsv, lower_range, upper_range)
 
-        # cv2.putText(frame, str(len(balls)), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-        cv2.circle(frame, (int(x + radius), int(y + radius)),
-                   int(radius), (0, 255, 0), 2)
+    contours, _ = cv2.findContours(
+        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if len(contours) > 0:
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 100:
+                (x, y, w, h) = cv2.boundingRect(contour)
+                radius = int(w / 2)
+                if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                    continue
+                cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
+                           int(max(w, h) / 2), (0, 255, 0), 2)
+                balls.append(Ball(x + radius / 2, y +
+                             radius / 2, radius, len(balls)))
 
     return balls
 
@@ -69,7 +73,7 @@ def detectRobot(frame):
         scaled_box = np.zeros_like(box)
         scaled_box[:, 0] = center[0] + scale_factor_x * (box[:, 0] - center[0])
         scaled_box[:, 1] = center[1] + scale_factor_y * (box[:, 1] - center[1])
-        
+
         rX = robotX - 70
         rY = robotY - 70
         rW = robotW + 130
