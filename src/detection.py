@@ -31,6 +31,8 @@ def detectBalls(frame, robot):
             if area > 100:
                 (x, y, w, h) = cv2.boundingRect(contour)
                 radius = int(w / 2)
+                if radius > 9 or radius < 7:
+                    continue
                 if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
                     continue
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
