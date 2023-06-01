@@ -7,8 +7,8 @@ import keyboard
 from ball import Ball
 from detection import detectBalls, detectBlueFrame, detectRobot, drawLine, getDistance
 
-from frameProvider import FrameTransformer
-from remoteControl import Remote
+from frameprovider import FrameTransformer
+from remotecontrol import Remote
 
 
 class Main:
