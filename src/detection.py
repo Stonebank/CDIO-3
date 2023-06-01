@@ -31,7 +31,7 @@ def detectOrangeBall(frame, robot):
                 radius = int(w / 2)
                 if radius > 9 or radius < 7:
                     continue
-                if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                if robot and x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
                     continue
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                            int(max(w, h) / 2), (0, 255, 0), 2)
@@ -68,7 +68,7 @@ def detectBalls(frame, robot):
                 radius = int(w / 2)
                 if radius > 9 or radius < 7:
                     continue
-                if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                if robot and x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
                     continue
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                            int(max(w, h) / 2), (0, 255, 0), 2)
@@ -109,6 +109,7 @@ def detectRobot(frame):
                            2 + (box[0][1] - box[1][1]) ** 2)
         robotW = math.sqrt((box[1][0] - box[2][0]) **
                            2 + (box[1][1] - box[2][1]) ** 2)
+        
         return Robot(center[0], center[1], robotH, robotW)
 
 
@@ -142,7 +143,7 @@ def detectBlueFrame(frame):
         return center
 
 
-def drawLine(frame, x1, y1, x2, y2):
+def drawLine(frame, x1, y1, x2, y2, robot, ball, blueframe):
     x1, y1 = int(x1), int(y1)
     x2, y2 = int(x2), int(y2)
 
@@ -151,7 +152,7 @@ def drawLine(frame, x1, y1, x2, y2):
     midpoint = ((x1 + x2) // 2, (y1 + y2) // 2 - 50)
 
     cv2.putText(frame, "Angle: {:.2f}".format(getAngle(
-        x1, y1, x2, y2)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        robot, ball, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     cv2.putText(frame, "Distance: {:.2f} cm".format(getDistance(x1, y1, x2, y2)), (
         midpoint[0], midpoint[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -163,8 +164,9 @@ def getDistance(x1, y1, x2, y2):
     return distance_in_pixels / 4.2
 
 
-def getAngle(x1, y1, x2, y2):
-    angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
-    if angle < 0:
-        angle += 360
+def getAngle(robot, ball, blueframe):
+    a = [robot.x - blueframe[0], robot.y - blueframe[1]]
+    b = [robot.x - ball.x, robot.y - ball.y]
+    angle = np.math.atan2(np.linalg.det([a, b]), np.dot(a, b))
+    angle = np.degrees(angle)
     return int(angle)
