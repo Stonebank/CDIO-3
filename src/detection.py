@@ -4,6 +4,39 @@ import math
 from ball import Ball
 from robot import Robot
 
+def detectOrangeBall(frame, robot):
+
+    orange_ball_hsv_values = {'hmin': 16, 'smin': 98, 'vmin': 191, 'hmax': 21, 'smax': 255, 'vmax': 255}
+
+    hmin, smin, vmin = orange_ball_hsv_values['hmin'], orange_ball_hsv_values['smin'], orange_ball_hsv_values['vmin']
+    hmax, smax, vmax = orange_ball_hsv_values['hmax'], orange_ball_hsv_values['smax'], orange_ball_hsv_values['vmax']
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower_range = np.array([hmin, smin, vmin])
+    upper_range = np.array([hmax, smax, vmax])
+
+    mask = cv2.inRange(hsv, lower_range, upper_range)
+
+    contours, _ = cv2.findContours(
+        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if len(contours) > 0:
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 100:
+                (x, y, w, h) = cv2.boundingRect(contour)
+                radius = int(w / 2)
+                if radius > 9 or radius < 7:
+                    continue
+                if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                    continue
+                cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
+                           int(max(w, h) / 2), (0, 255, 0), 2)
+                return Ball(x + radius / 2, y +
+                             radius / 2, radius, 0)
+    return None
+    
 
 def detectBalls(frame, robot):
 
@@ -33,8 +66,8 @@ def detectBalls(frame, robot):
                 radius = int(w / 2)
                 if radius > 9 or radius < 7:
                     continue
-                #if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
-                    #continue
+                if x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                    continue
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                            int(max(w, h) / 2), (0, 255, 0), 2)
                 balls.append(Ball(x + radius / 2, y +

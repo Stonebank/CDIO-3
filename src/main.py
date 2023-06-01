@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import keyboard
 from ball import Ball
-from detection import detectBalls, detectBlueFrame, detectRobot, drawLine, getDistance
+from detection import *
 
 from frameprovider import FrameTransformer
 from remotecontrol import Remote
@@ -35,6 +35,7 @@ class Main:
 
             robot = detectRobot(transformed)
             blueFrame = detectBlueFrame(transformed)
+            orangeBall = detectOrangeBall(transformed, robot)
             balls = detectBalls(transformed, robot)
 
             if balls and robot:
