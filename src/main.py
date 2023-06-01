@@ -1,6 +1,4 @@
-import math
 import sys
-import threading
 import cv2
 import numpy as np
 import keyboard
@@ -23,7 +21,6 @@ class Main:
         self.ft = FrameTransformer()
         frameCount = 0
 
-        # Set hotkeys
         keyboard.add_hotkey('m', lambda: (
             self.toggleManMode()))
         keyboard.add_hotkey('q', lambda: (
@@ -40,7 +37,6 @@ class Main:
             blueFrame = detectBlueFrame(transformed)
             balls = detectBalls(transformed, robot)
 
-            # Find closest ball
             if balls and robot:
                 closestBall = balls[0]
                 closestDistance = getDistance(
