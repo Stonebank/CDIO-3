@@ -5,8 +5,8 @@ import keyboard
 from ball import Ball
 from detection import *
 
-from frameprovider import FrameTransformer
-from remotecontrol import Remote
+from frameProvider import FrameTransformer
+from remoteControl import Remote
 
 
 class Main:
@@ -17,7 +17,7 @@ class Main:
         # Connect to robot
         # remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
 
@@ -47,8 +47,8 @@ class Main:
                     if distance < closestDistance:
                         closestBall = ball
                         closestDistance = distance
-
-                drawLine(transformed, blueFrame[0], blueFrame[1],
+                if blueFrame is not None :
+                    drawLine(transformed, blueFrame[0], blueFrame[1],
                          closestBall.x, closestBall.y)
 
             cv2.imshow("Transformed", transformed)

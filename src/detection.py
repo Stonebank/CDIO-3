@@ -4,9 +4,11 @@ import math
 from ball import Ball
 from robot import Robot
 
+
 def detectOrangeBall(frame, robot):
 
-    orange_ball_hsv_values = {'hmin': 16, 'smin': 98, 'vmin': 191, 'hmax': 21, 'smax': 255, 'vmax': 255}
+    orange_ball_hsv_values = {'hmin': 16, 'smin': 98,
+                              'vmin': 191, 'hmax': 21, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = orange_ball_hsv_values['hmin'], orange_ball_hsv_values['smin'], orange_ball_hsv_values['vmin']
     hmax, smax, vmax = orange_ball_hsv_values['hmax'], orange_ball_hsv_values['smax'], orange_ball_hsv_values['vmax']
@@ -20,7 +22,7 @@ def detectOrangeBall(frame, robot):
 
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     if len(contours) > 0:
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -34,9 +36,9 @@ def detectOrangeBall(frame, robot):
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                            int(max(w, h) / 2), (0, 255, 0), 2)
                 return Ball(x + radius / 2, y +
-                             radius / 2, radius, 0)
+                            radius / 2, radius, 0)
     return None
-    
+
 
 def detectBalls(frame, robot):
 
@@ -78,7 +80,8 @@ def detectBalls(frame, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 70, 'smin': 38, 'vmin': 0, 'hmax': 92, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 70, 'smin': 38, 'vmin': 0,
+                  'hmax': 92, 'smax': 255, 'vmax': 255}
     {'hmin': 70, 'smin': 38, 'vmin': 0, 'hmax': 92, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
@@ -93,7 +96,7 @@ def detectRobot(frame):
 
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         rect = cv2.minAreaRect(largest_contour)
@@ -102,15 +105,17 @@ def detectRobot(frame):
 
         cv2.drawContours(frame, [box], 0, (0, 255, 0), 3)
         center = np.mean(box, axis=0)
-        robotH = math.sqrt((box[0][0] - box[1][0]) ** 2 + (box[0][1] - box[1][1]) ** 2)
-        robotW = math.sqrt((box[1][0] - box[2][0]) ** 2 + (box[1][1] - box[2][1]) ** 2)
-    
-    return Robot(center[0], center[1], robotH, robotW)
+        robotH = math.sqrt((box[0][0] - box[1][0]) **
+                           2 + (box[0][1] - box[1][1]) ** 2)
+        robotW = math.sqrt((box[1][0] - box[2][0]) **
+                           2 + (box[1][1] - box[2][1]) ** 2)
+        return Robot(center[0], center[1], robotH, robotW)
 
 
 def detectBlueFrame(frame):
-    
-    hsv_values = {'hmin': 91, 'smin': 171, 'vmin': 141, 'hmax': 126, 'smax': 255, 'vmax': 255}
+
+    hsv_values = {'hmin': 91, 'smin': 171, 'vmin': 141,
+                  'hmax': 126, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -124,7 +129,7 @@ def detectBlueFrame(frame):
 
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         rect = cv2.minAreaRect(largest_contour)
@@ -133,8 +138,8 @@ def detectBlueFrame(frame):
 
         cv2.drawContours(frame, [box], 0, (0, 255, 0), 3)
         center = np.mean(box, axis=0)
-    
-    return center
+
+        return center
 
 
 def drawLine(frame, x1, y1, x2, y2):
