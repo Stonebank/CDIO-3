@@ -1,12 +1,13 @@
 import sys
+
 import cv2
-import numpy as np
 import keyboard
+import numpy as np
+
 from ball import Ball
 from detection import *
-
-from frameprovider import FrameTransformer
-from remotecontrol import Remote
+from frameProvider import FrameTransformer
+from remoteControl import Remote
 
 
 class Main:
