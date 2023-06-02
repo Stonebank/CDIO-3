@@ -12,6 +12,7 @@ class FrameTransformer:
     height = 500
     corners = [[0, 0], [750, 0], [0, 500], [750, 500]]
     goals = [[0, 250], [750, 250]]
+    goal1 = None
 
     def __init__(self):
         pass
@@ -72,6 +73,13 @@ class FrameTransformer:
                 self.goals[1] = [x, y]
                 print("Right goal(", x, ",", y, ")")
                 self.selectCount = 0
+
+    def get_goal(self, event, x, y, flags, param):
+
+        if event == cv2.EVENT_LBUTTONUP:
+
+            self.goal1 = (x,y)
+            print(x,y)
 
     def getCorners(self, frame):
         upper_left = [99999, 99999]

@@ -4,6 +4,7 @@ import cv2
 import keyboard
 import numpy as np
 
+from goalClass import Goal
 from ball import Ball
 from detection import *
 from frameProvider import FrameTransformer
@@ -11,6 +12,21 @@ from remoteControl import Remote
 
 
 class Main:
+
+    goal0 = Goal
+    goal1 = Goal
+    goal0OfSet = Goal
+    goal1OfSet = Goal
+
+    goal0OfSet.x = 1
+    goal0OfSet.y = 1
+    goal1OfSet.x = 1
+    goal1OfSet.y = 1
+
+    goal0.x = 1
+    goal0.y = 1
+    goal1.x = 1
+    goal1.y = 1
 
     robotX, robotY, robotWidth, robotHeight = 0, 0, 0, 0
 
@@ -59,7 +75,9 @@ class Main:
             ret, frame = cap.read()
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
-
+            
+            #print("Transformed shape: ", transformed.shape)
+            #print("Frame shape: ", frame.shape)
             robot = detectRobot(transformed)
             blueFrame = detectBlueFrame(transformed)
             self.robot = robot
@@ -80,6 +98,8 @@ class Main:
                     self.dDistance = closestDistance
                     drawLine(transformed, blueFrame[0], blueFrame[1],
                          self.closetsBall.x, self.closetsBall.y, ball=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
+                    drawLine(transformed, robot.x, robot.y,
+                         self.goal0.x, self.goal0.y, ball=self.goal0, robot=self.robot, blueframe=self.blueFrame)
                     
 
             cv2.imshow("Transformed", transformed)
@@ -94,64 +114,79 @@ class Main:
     def rotateUntilZero(self, remote):
         self.dAngle = getAngle(robot=self.robot, ball=self.closetsBall, blueframe=self.blueFrame)
         while self.dAngle != 0:
-            remote.tank_turn_degrees(self.dAngle)
+            remote.tank_turn_degrees(self.dAngle, 10)
             self.dAngle = getAngle(robot=self.robot, ball=self.closetsBall, blueframe=self.blueFrame)
             print("updating ", self.dAngle)
             
     def goForwardUntilZero(self, remote):
         self.dDistance = getDistance(self.robot.x, self.robot.y, self.closetsBall.x, self.closetsBall.y)
-        remote.go_forward_distance(self.dDistance)
+        remote.go_forward_distance(self.dDistance, 50)
 
     def getIntoPositionToScore(self, remote):
 
         # Set variables
-        goal0 = Ball
-        goal1 = Ball
-        goal0OfSet = Ball
-        goal1OfSet = Ball
-
-        goal0.x, goal0.y = self.ft.goals[0]
-        goal1.x, goal1.y = self.ft.goals[1]
-        frameSizeX = goal1.x
-        goalOffset = frameSizeX*0.05
-        goal0OfSet.x = (goal0.x + goalOffset)
-        goal0OfSet.y = goal0.y
-        goal1OfSet.x = (goal1.x - goalOffset)
-        goal1OfSet.y = goal1.y
 
         
-        if (getDistance(self.robot.x, self.robot.y, goal0.x, goal0.y,) < getDistance(self.robot.x, self.robot.y, goal1.x, goal1.y,)):
-            #go to goal0
+        
+        
+        self.goal0.x, self.goal0.y = self.ft.goal1[0], self.ft.goal1[1]
+        #self.goal1.x, self.goal1.y = 750, 250
+        
+        self.goal0OfSet.x = (self.goal0.x + 75)
+        self.goal0OfSet.y = self.goal0.y
+        #self.goal1OfSet.x = (self.goal1.x - 75)
+        #self.goal1OfSet.y = self.goal1.y
+
+        
+        if (True):
+            # trying to score on goal0
             # turn to face goal off set 
-            self.dAngle = getAngle(robot=self.robot, ball=goal0OfSet, blueframe=self.blueFrame)
-            while self.dAngle > 2:
-                remote.tank_turn_degrees(self.dAngle)
-                self.dAngle = getAngle(robot=self.robot, ball=goal0OfSet, blueframe=self.blueFrame)
-                print("updating ", self.dAngle)
-            # drive to off set
-            self.dDistance = getDistance(self.robot.x, self.robot.y, goal0OfSet.x, goal0OfSet.y)
-            remote.go_forward_distance(self.dDistance)
+            angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+            remote.tank_turn_degrees(angle, 10)
+            angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+            while angle != 0:
+                remote.tank_turn_degrees(angle, 4)
+                angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+                print("updating ", angle)
+            # drive to goal off set
+            distance = getDistance(self.robot.x, self.robot.y, self.goal0OfSet.x, self.goal0OfSet.y)
+            
+            
+            remote.go_forward_distance(distance-20, 100)
+            angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+            remote.tank_turn_degrees(angle, 10)
+            angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+            while angle != 0:
+                remote.tank_turn_degrees(angle, 4)
+                angle = getAngle(robot=self.robot, ball=self.goal0OfSet, blueframe=self.blueFrame)
+                print("updating ", angle)
+                
+            
+
             # turn to face goal
-            self.dAngle = getAngle(robot=self.robot, ball=goal1, blueframe=self.blueFrame)
-            while self.dAngle > 2:
-                remote.tank_turn_degrees(self.dAngle)
-                self.dAngle = getAngle(robot=self.robot, ball=goal1, blueframe=self.blueFrame)
-                print("updating ", self.dAngle)
+            angle = getAngle(robot=self.robot, ball=self.goal0, blueframe=self.blueFrame)
+            remote.tank_turn_degrees(angle, 15)
+            angle = getAngle(robot=self.robot, ball=self.goal0, blueframe=self.blueFrame)
+            while angle != 0:
+                remote.tank_turn_degrees(angle, 2)
+                angle = getAngle(robot=self.robot, ball=self.goal0, blueframe=self.blueFrame)
+                print("updating ", angle)
         else:
-            #go to goal1
-            self.dAngle = getAngle(robot=self.robot, ball=goal1OfSet, blueframe=self.blueFrame)
-            while self.dAngle > 2:
+            # trying to score on goal1
+            # turn to face goal off set 
+            self.dAngle = getAngle(robot=self.robot, ball=self.goal1OfSet, blueframe=self.blueFrame)
+            while self.dAngle > 2 or self.dAngle < -2:
                 remote.tank_turn_degrees(self.dAngle)
-                self.dAngle = getAngle(robot=self.robot, ball=goal1OfSet, blueframe=self.blueFrame)
+                self.dAngle = getAngle(robot=self.robot, ball=self.goal1OfSet, blueframe=self.blueFrame)
                 print("updating ", self.dAngle)
-
-            self.dDistance = getDistance(self.robot.x, self.robot.y, goal1OfSet.x, goal1OfSet.y)
-            remote.go_forward_distance(self.dDistance)
-
-            self.dAngle = getAngle(robot=self.robot, ball=goal0, blueframe=self.blueFrame)
-            while self.dAngle > 2:
+            # drive to goal off set
+            distance = getDistance(self.robot.x, self.robot.y, self.goal1OfSet.x, self.goal1OfSet.y)
+            remote.go_forward_distance(distance)
+            # turn to face goal
+            self.dAngle = getAngle(robot=self.robot, ball=self.goal1, blueframe=self.blueFrame)
+            while self.dAngle > 2 or self.dAngle < -2:
                 remote.tank_turn_degrees(self.dAngle)
-                self.dAngle = getAngle(robot=self.robot, ball=goal0, blueframe=self.blueFrame)
+                self.dAngle = getAngle(robot=self.robot, ball=self.goal1, blueframe=self.blueFrame)
                 print("updating ", self.dAngle) 
 
     # Toggle for manual corner selection
@@ -160,6 +195,8 @@ class Main:
             self.ft.manMode = True
             cv2.namedWindow("Board")
             cv2.setMouseCallback("Board", self.ft.get_point)
+            cv2.namedWindow("Transformed")
+            cv2.setMouseCallback("Transformed", self.ft.get_goal)
             print("MANUAL MODE - input corners")
         elif (self.ft.manMode):
             self.ft.manMode = False
