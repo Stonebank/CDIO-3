@@ -11,7 +11,6 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = [[0, 0], [750, 0], [0, 500], [750, 500]]
-    goals = [[0, 250], [750, 250]]
     goal1 = None
 
     def __init__(self):
@@ -20,7 +19,6 @@ class FrameTransformer:
     def transform(self, frame, frameCount):
         if (not self.manMode and frameCount % 20 == 0):
             self.corners = self.getCorners(frame)
-            self.goals = self.getGoals(self.corners)
 
         if (self.corners != None):
             # Coordinates for the corners
@@ -36,7 +34,7 @@ class FrameTransformer:
                 oldCoordinates, newCoordinates)
             transformed = cv2.warpPerspective(
                 frame, matrix, (self.width, self.height))
-            # Create circles to indicate detected corners and goals
+            # Create circles to indicate detected corners
             frame = cv2.circle(frame, tuple(
                 self.corners[0]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(
@@ -45,8 +43,6 @@ class FrameTransformer:
                 self.corners[2]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(
                 self.corners[3]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[0]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[1]), 20, (255, 0, 0), 2)
             return transformed
 
     def get_point(self, event, x, y, flags, param):
@@ -66,12 +62,6 @@ class FrameTransformer:
             elif (self.selectCount == 4):
                 self.corners[3] = [x, y]
                 print("Lower right(", x, ",", y, ")")
-            elif (self.selectCount == 5):
-                self.goals[0] = [x, y]
-                print("Left goal(", x, ",", y, ")")
-            elif (self.selectCount == 6):
-                self.goals[1] = [x, y]
-                print("Right goal(", x, ",", y, ")")
                 self.selectCount = 0
 
     def get_goal(self, event, x, y, flags, param):
@@ -132,17 +122,3 @@ class FrameTransformer:
                         lower_right[1] = j
         return [upper_left, upper_right, lower_left, lower_right]
 
-    def getGoals(self, corners):
-        goal_left = [0, 99999]
-        goal_right = [99999, 0]
-        upper_left = corners[0]
-        upper_right = corners[1]
-        lower_left = corners[2]
-        lower_right = corners[3]
-
-        goal_left[0] = int((upper_left[0] + lower_left[0]) / 2)
-        goal_left[1] = int((upper_left[1] + lower_left[1]) / 2)
-        goal_right[0] = int((upper_right[0] + lower_right[0]) / 2)
-        goal_right[1] = int((upper_right[1] + lower_right[1]) / 2)
-
-        return [goal_left, goal_right]
