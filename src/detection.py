@@ -44,8 +44,8 @@ def detectBalls(frame, robot):
 
     balls = []
 
-    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 218,
-                  'hmax': 179, 'smax': 67, 'vmax': 255}
+    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 184,
+                  'hmax': 179, 'smax': 60, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -80,9 +80,9 @@ def detectBalls(frame, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 70, 'smin': 38, 'vmin': 0,
-                  'hmax': 92, 'smax': 255, 'vmax': 255}
-    {'hmin': 70, 'smin': 38, 'vmin': 0, 'hmax': 92, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 27, 'smin': 27, 'vmin': 0,
+                  'hmax': 101, 'smax': 255, 'vmax': 255}
+    
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -115,8 +115,8 @@ def detectRobot(frame):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 91, 'smin': 171, 'vmin': 141,
-                  'hmax': 126, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 103, 'smin': 64, 'vmin': 74,
+                  'hmax': 159, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
