@@ -33,6 +33,8 @@ class Main:
     robot = None
     blueFrame = None
     closetsBall = None
+    crossPosition = [0,0]
+    crossRadius = 50
 
     dAngle = 0
     dDistance = 0
@@ -66,19 +68,20 @@ class Main:
         while True:
             frameCount += 1
             ret, frame = cap.read()
+            #frame = cv2.imread('src/bane.jpg')
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
-            
-            #print("Transformed shape: ", transformed.shape)
-            #print("Frame shape: ", frame.shape)
+            print("Transformed shape: ", transformed.shape)
+            self.crossPosition = self.ft.getCross(transformed)
+            cv2.circle(transformed, (self.crossPosition[0], self.crossPosition[1]), self.crossRadius, (0, 0, 255), 2)
             robot = detectRobot(transformed)
             blueFrame = detectBlueFrame(transformed)
             self.robot = robot
             orangeBall = detectOrangeBall(transformed, robot)
             balls = detectBalls(transformed, robot)
-            #delete this circle later
-            cv2.circle(transformed, (250, 375),
-                        int(25), (0, 255, 0), 2)
+            #delete this circle later its just to get the 
+            #cv2.circle(transformed, ( int (transformed.shape[1]/2), int (transformed.shape[0]/2)), int(50), (0, 255, 0), 2)
+            
             if balls and robot:
                 self.closetsBall = balls[0]
                 closestDistance = getDistance(
@@ -134,8 +137,8 @@ class Main:
         point1 = [self.robot.x, self.robot.y]
         point2 = [ball.x, ball.y]
         circle_center = [250, 375]
-        circle_radius = 25
-        if is_line_crossing_circle(point1, point2, circle_center, circle_radius) :
+        
+        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
             return False
 
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
@@ -162,7 +165,13 @@ class Main:
         self.goForwardUntilZero(self.goal0OfSet) 
         # face the goal 
         self.rotateUntilZero(self.goal0)
-        
+
+    def goAroundCross(self):
+        if self.robot.y > 250: #go up
+            print("a")
+        else: #go down
+            print("a")
+                    
 
             
     # Toggle for manual corner selection
