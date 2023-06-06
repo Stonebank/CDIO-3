@@ -41,9 +41,9 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        self.remote = Remote()
+        #self.remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
 
@@ -54,14 +54,14 @@ class Main:
         tvecs = None
 
         # Load saved data
-        data = np.load('calibrationvars.npz')
+        data = np.load('ressources\calibrationvars.npz')
 
         cameraMatrix = data['arr_0']
         dist = data['arr_1']
         rvecs = data['arr_2']
         tvecs = data['arr_3']
 
-        h, w = cap.shape[:2]
+        h, w = (500, 750) 
         newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
 
         keyboard.add_hotkey('m', lambda: (
@@ -87,7 +87,7 @@ class Main:
             ret, frame = cap.read()
             dst = cv2.undistort(frame, cameraMatrix, dist, None, newCameraMatrix)
             #frame = cv2.imread('src/bane.jpg')
-            transformed = self.ft.transform(dst frameCount)
+            transformed = self.ft.transform(dst, frameCount)
             transformed = frame if transformed is None else transformed
             print("Transformed shape: ", transformed.shape)
             self.crossPosition = self.ft.getCross(transformed)
@@ -114,9 +114,9 @@ class Main:
                     #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
                     self.dDistance = closestDistance
                     drawLine(transformed, blueFrame[0], blueFrame[1],
-                         self.closetsBall.x, self.closetsBall.y, ball=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
+                         self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
                     drawLine(transformed, robot.x, robot.y,
-                         self.goal0.x, self.goal0.y, ball=self.goal0, robot=self.robot, blueframe=self.blueFrame)
+                         self.goal0.x, self.goal0.y, object=self.goal0, robot=self.robot, blueframe=self.blueFrame)
                     
 
             cv2.imshow("Transformed", transformed)
@@ -189,6 +189,19 @@ class Main:
             print("a")
         else: #go down
             print("a")
+
+    def findChessBoard(self, frame):
+        chessboardSize = (12,8)
+
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        objp = np.zeros((chessboardSize[0]*chessboardSize[1],3), np.float32)
+        objp[:,:2] = np.mgrid[0:chessboardSize[0],0:chessboardSize[1]].T.reshape(-1,2)
+        axisBoxes = np.float32([ [0,0,0], [0,3,0], [3,3,0], [3,0,0], 
+                        [0,0,-3], [0,3,-3], [3,3,-3], [3,0,-3] ])
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        ret, corners = cv2.findChessboardCorners(gray, chessboardSize, None)
+        cv2.drawChessboardCorners(frame, chessboardSize, corners, ret)
                     
 
             
