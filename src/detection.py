@@ -145,7 +145,7 @@ def detectBlueFrame(frame):
         return center
 
 
-def drawLine(frame, x1, y1, x2, y2, robot, ball, blueframe):
+def drawLine(frame, x1, y1, x2, y2, robot, object, blueframe):
     x1, y1 = int(x1), int(y1)
     x2, y2 = int(x2), int(y2)
 
@@ -154,7 +154,7 @@ def drawLine(frame, x1, y1, x2, y2, robot, ball, blueframe):
     midpoint = ((x1 + x2) // 2, (y1 + y2) // 2 - 50)
 
     cv2.putText(frame, "Angle: {:.2f}".format(getAngle(
-        robot, ball, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        robot, object, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     cv2.putText(frame, "Distance: {:.2f} cm".format(getDistance(x1, y1, x2, y2)), (
         midpoint[0], midpoint[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -166,9 +166,9 @@ def getDistance(x1, y1, x2, y2):
     return distance_in_pixels / 4.2
 
 
-def getAngle(robot, ball, blueframe):
+def getAngle(robot, object, blueframe):
     a = [robot.x - blueframe[0], robot.y - blueframe[1]]
-    b = [robot.x - ball.x, robot.y - ball.y]
+    b = [robot.x - object.x, robot.y - object.y]
     angle = np.math.atan2(np.linalg.det([a, b]), np.dot(a, b))
     angle = np.degrees(angle)
     return int(angle)
