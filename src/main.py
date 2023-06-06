@@ -4,10 +4,10 @@ import cv2
 import keyboard
 import numpy as np
 
-from goalClass import Goal
 from ball import Ball
 from detection import *
 from frameProvider import FrameTransformer
+from goalClass import Goal
 from remoteControl import Remote
 
 
@@ -47,6 +47,23 @@ class Main:
         self.ft = FrameTransformer()
         frameCount = 0
 
+        # Import undistor matrix
+        cameraMatrix = None
+        dist = None
+        rvecs = None
+        tvecs = None
+
+        # Load saved data
+        data = np.load('calibrationvars.npz')
+
+        cameraMatrix = data['arr_0']
+        dist = data['arr_1']
+        rvecs = data['arr_2']
+        tvecs = data['arr_3']
+
+        h, w = cap.shape[:2]
+        newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
+
         keyboard.add_hotkey('m', lambda: (
             self.toggleManMode()))
         keyboard.add_hotkey('q', lambda: (
@@ -68,8 +85,9 @@ class Main:
         while True:
             frameCount += 1
             ret, frame = cap.read()
+            dst = cv2.undistort(frame, cameraMatrix, dist, None, newCameraMatrix)
             #frame = cv2.imread('src/bane.jpg')
-            transformed = self.ft.transform(frame, frameCount)
+            transformed = self.ft.transform(dst frameCount)
             transformed = frame if transformed is None else transformed
             print("Transformed shape: ", transformed.shape)
             self.crossPosition = self.ft.getCross(transformed)
@@ -102,7 +120,7 @@ class Main:
                     
 
             cv2.imshow("Transformed", transformed)
-            cv2.imshow("Board", frame)
+            cv2.imshow("Board", dst)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             # if (frameCount%20==0):
