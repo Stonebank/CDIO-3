@@ -1,6 +1,8 @@
+import math
+
 import cv2
 import numpy as np
-import math
+
 from ball import Ball
 from robot import Robot
 
@@ -80,8 +82,8 @@ def detectBalls(frame, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 27, 'smin': 27, 'vmin': 0,
-                  'hmax': 101, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 70, 'smin': 0, 'vmin': 31,
+                  'hmax': 130, 'smax': 42, 'vmax': 72}
     
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
@@ -115,8 +117,8 @@ def detectRobot(frame):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 103, 'smin': 64, 'vmin': 74,
-                  'hmax': 159, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 104, 'smin': 159, 'vmin': 0,
+                  'hmax': 157, 'smax': 255, 'vmax': 53}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
