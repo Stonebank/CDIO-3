@@ -89,7 +89,7 @@ class Main:
             #frame = cv2.imread('src/bane.jpg')
             transformed = self.ft.transform(dst frameCount)
             transformed = frame if transformed is None else transformed
-            print("Transformed shape: ", transformed.shape)
+            #print("Transformed shape: ", transformed.shape)
             self.crossPosition = self.ft.getCross(transformed)
             cv2.circle(transformed, (self.crossPosition[0], self.crossPosition[1]), self.crossRadius, (0, 0, 255), 2)
             robot = detectRobot(transformed)
@@ -97,8 +97,6 @@ class Main:
             self.robot = robot
             orangeBall = detectOrangeBall(transformed, robot)
             balls = detectBalls(transformed, robot)
-            #delete this circle later its just to get the 
-            #cv2.circle(transformed, ( int (transformed.shape[1]/2), int (transformed.shape[0]/2)), int(50), (0, 255, 0), 2)
             
             if balls and robot:
                 self.closetsBall = balls[0]
@@ -111,6 +109,7 @@ class Main:
                         closestDistance = distance
                 if blueFrame is not None:
                     self.blueFrame = blueFrame
+                    self.goAroundCross()
                     #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
                     self.dDistance = closestDistance
                     drawLine(transformed, blueFrame[0], blueFrame[1],
@@ -154,10 +153,9 @@ class Main:
     def goForwardUntilZero(self, ball):
         point1 = [self.robot.x, self.robot.y]
         point2 = [ball.x, ball.y]
-        circle_center = [250, 375]
-        
+
         if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
-            return False
+            self.goAroundCross()
 
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
         if (distance > 10) :
@@ -185,13 +183,38 @@ class Main:
         self.rotateUntilZero(self.goal0)
 
     def goAroundCross(self):
-        if self.robot.y > 250: #go up
+        self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
+        #tempCrossPosition = Goal(self.crossPosition[0], self.crossPosition[1])
+        #angle = getAngle(robot=self.robot, ball=tempCrossPosition, blueframe=self.blueFrame)
+        """if self.robot.y > 250 and self.robot.x < 375: #top left
+            tempDriveAround1 = Goal(self.robot.x, (self.robot.y))
+            tempDriveAround2 = Goal(self.robot.x, self.robot.y)
             print("a")
-        else: #go down
-            print("a")
-                    
-
             
+        elif self.robot.y > 250 and self.robot.x > 375: #top right:
+            print("b")
+        elif self.robot.y < 250 and self.robot.x > 375: #bot left:
+            print("c")
+        elif self.robot.y > 250 and self.robot.x > 375: #bot right:
+            print("d")"""
+
+    def calculate_angle(self, x1, y1, x2, y2):
+        # Calculate the differences in x and y coordinates
+        dx = x2 - x1
+        dy = y2 - y1
+        
+        # Calculate the angle using arctan2 function
+        angle_rad = math.atan2(dy, dx)
+        
+        # Convert the angle from radians to degrees
+        angle_deg = math.degrees(angle_rad)
+        
+        # Ensure the angle is within the range of 0 to 360 degrees
+        if angle_deg < 0:
+            angle_deg += 360
+        print(angle_deg)
+        return angle_deg
+                           
     # Toggle for manual corner selection
     def toggleManMode(self):
         if (not self.ft.manMode):
