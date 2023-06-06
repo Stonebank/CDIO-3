@@ -43,7 +43,7 @@ class Main:
         # Connect to robot
         self.remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
 
@@ -109,7 +109,7 @@ class Main:
                         closestDistance = distance
                 if blueFrame is not None:
                     self.blueFrame = blueFrame
-                    self.goAroundCross()
+                   # self.goAroundCross()
                     #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
                     self.dDistance = closestDistance
                     drawLine(transformed, blueFrame[0], blueFrame[1],
@@ -134,20 +134,25 @@ class Main:
         offsetY = ball.y
 
         if ball.y < 50 :
-            offsetY = ball.y + 50
+            offsetY = ball.y + 80
+            print("offset 1")
             
         if ball.x < 50 :
-            offsetX = ball.x + 50
+            offsetX = ball.x + 80
+            print("offset 2")
 
         if ball.y > 450 :
-            offsetY = ball.y - 50
+            offsetY = ball.y - 80
+            print("offset 3")
 
         if ball.x > 700 :
-            offsetX = ball.x - 50
-
-        offset = Ball(offsetX, offsetY, 7, 10)
-        self.rotateUntilZero(offset)
-        self.goForwardUntilZero(offset)
+            offsetX = ball.x - 80
+            print("offset 4")
+        
+        if offsetX != ball.x or offsetY != ball.y:
+            offset = Ball(offsetX, offsetY, 7, 10)
+            self.rotateUntilZero(offset)
+            self.goForwardUntilZero(offset)
 
         self.rotateUntilZero(ball)
         self.remote.consume_balls()
@@ -164,30 +169,29 @@ class Main:
         point1 = [self.robot.x, self.robot.y]
         point2 = [ball.x, ball.y]
 
-        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
-            self.goAroundCross(ball)
+        #if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
+            #self.goAroundCross(ball)
+            #print("circle!")
 
-        angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
-        self.remote.tank_turn_degrees(angle, 20)
-        angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
+        angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
+        self.remote.tank_turn_degrees(angle, 15)
+        angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
         count = 0
-        while angle != 0 and count < 20:
+        while angle != 0 and count < 10:
             self.remote.tank_turn_degrees(angle, 3)
-            angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
+            angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
             count = count + 1
             
     def goForwardUntilZero(self, ball):
 
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
-        if (distance > 10) :
-            self.remote.go_forward_distance(distance-10, 80)
+        if (distance > 30) :
+            self.remote.go_forward_distance(distance-15, 70)
             self.rotateUntilZero(ball)
-        else :
-            self.remote.go_forward_distance(distance, 80)
         
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
         if (distance > 0) :
-            self.remote.go_forward_distance(distance, 40)
+            self.remote.go_forward_distance(distance, 35)
 
     def getIntoPositionToScore(self):
         # Set variables
