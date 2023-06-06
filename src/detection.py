@@ -170,3 +170,17 @@ def getAngle(robot, ball, blueframe):
     angle = np.math.atan2(np.linalg.det([a, b]), np.dot(a, b))
     angle = np.degrees(angle)
     return int(angle)
+
+
+def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
+    distance = math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
+    direction_vector = [(point2[0] - point1[0]) / distance, (point2[1] - point1[1]) / distance]
+    endpoint_vector = [point1[0] - circle_center[0], point1[1] - circle_center[1]]
+    dot_product = direction_vector[0] * endpoint_vector[0] + direction_vector[1] * endpoint_vector[1]
+    closest_point = [circle_center[0] + dot_product * direction_vector[0], circle_center[1] + dot_product * direction_vector[1]]
+    closest_distance = math.sqrt((closest_point[0] - circle_center[0])**2 + (closest_point[1] - circle_center[1])**2)
+    
+    if closest_distance <= circle_radius:
+        return True
+    else:
+        return False

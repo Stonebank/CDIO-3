@@ -76,6 +76,9 @@ class Main:
             self.robot = robot
             orangeBall = detectOrangeBall(transformed, robot)
             balls = detectBalls(transformed, robot)
+            #delete this circle later
+            cv2.circle(transformed, (250, 375),
+                        int(25), (0, 255, 0), 2)
             if balls and robot:
                 self.closetsBall = balls[0]
                 closestDistance = getDistance(
@@ -128,6 +131,13 @@ class Main:
             count = count + 1
             
     def goForwardUntilZero(self, ball):
+        point1 = [self.robot.x, self.robot.y]
+        point2 = [ball.x, ball.y]
+        circle_center = [250, 375]
+        circle_radius = 25
+        if is_line_crossing_circle(point1, point2, circle_center, circle_radius) :
+            return False
+
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
         if (distance > 10) :
             self.remote.go_forward_distance(distance-10, 80)
