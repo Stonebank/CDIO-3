@@ -14,7 +14,7 @@ class Remote:
         # If this fails, verify your IP connectivty via ``ping X.X.X.X``
         print(rpyc.__version__)
         print('attempting to connect')
-        conn = rpyc.classic.connect("169.254.100.82")
+        conn = rpyc.classic.connect("169.254.2.97")
         print('connected')
 
         # import ev3dev2 on the remote ev3dev

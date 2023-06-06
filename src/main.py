@@ -129,6 +129,26 @@ class Main:
 
     def consumeClosestBall(self) : 
         ball = self.closetsBall
+
+        offsetX = ball.x
+        offsetY = ball.y
+
+        if ball.y < 50 :
+            offsetY = ball.y + 50
+            
+        if ball.x < 50 :
+            offsetX = ball.x + 50
+
+        if ball.y > 450 :
+            offsetY = ball.y - 50
+
+        if ball.x > 700 :
+            offsetX = ball.x - 50
+
+        offset = Ball(offsetX, offsetY, 7, 10)
+        self.rotateUntilZero(offset)
+        self.goForwardUntilZero(offset)
+
         self.rotateUntilZero(ball)
         self.remote.consume_balls()
         self.goForwardUntilZero(ball)
