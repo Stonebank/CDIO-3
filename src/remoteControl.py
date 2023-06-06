@@ -53,9 +53,9 @@ class Remote:
         self.tank.on_for_rotations(-50, -50, 1)
 
     def go_forward_distance(self, distance, speed):
-        wheel_size = 30
-        rotations = math.ceil((distance/wheel_size))
-        self.tank.on_for_rotations(speed, speed, rotations)
+        wheel_size = 17.59 
+        rotations = (distance/wheel_size)*360
+        self.tank.on_for_degrees(speed, speed, rotations)
 
     def go_backwards(self):
         self.tank.on(0, -50)
