@@ -41,7 +41,7 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        #self.remote = Remote()
+        self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -161,6 +161,12 @@ class Main:
 
 
     def rotateUntilZero(self, ball):
+        point1 = [self.robot.x, self.robot.y]
+        point2 = [ball.x, ball.y]
+
+        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
+            self.goAroundCross(ball)
+
         angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
         self.remote.tank_turn_degrees(angle, 20)
         angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
@@ -171,11 +177,6 @@ class Main:
             count = count + 1
             
     def goForwardUntilZero(self, ball):
-        point1 = [self.robot.x, self.robot.y]
-        point2 = [ball.x, ball.y]
-
-        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
-            self.goAroundCross()
 
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
         if (distance > 10) :
@@ -202,11 +203,12 @@ class Main:
         # face the goal 
         self.rotateUntilZero(self.goal0)
 
-    def goAroundCross(self):
-        self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
+    def goAroundCross(self, endpoint): # this function needs to ends with an rotateUntilZero(endpoint)
+        tempangle = self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
         #tempCrossPosition = Goal(self.crossPosition[0], self.crossPosition[1])
         #angle = getAngle(robot=self.robot, ball=tempCrossPosition, blueframe=self.blueFrame)
-        """if self.robot.y > 250 and self.robot.x < 375: #top left
+        if self.robot.y > 250 and self.robot.x < 375: #top left
+
             tempDriveAround1 = Goal(self.robot.x, (self.robot.y))
             tempDriveAround2 = Goal(self.robot.x, self.robot.y)
             print("a")
@@ -216,7 +218,7 @@ class Main:
         elif self.robot.y < 250 and self.robot.x > 375: #bot left:
             print("c")
         elif self.robot.y > 250 and self.robot.x > 375: #bot right:
-            print("d")"""
+            print("d")
 
     def calculate_angle(self, x1, y1, x2, y2):
         # Calculate the differences in x and y coordinates
@@ -232,7 +234,7 @@ class Main:
         # Ensure the angle is within the range of 0 to 360 degrees
         if angle_deg < 0:
             angle_deg += 360
-        #print(angle_deg)
+
         return angle_deg
                            
 
