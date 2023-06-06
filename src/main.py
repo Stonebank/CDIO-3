@@ -232,7 +232,7 @@ class Main:
         # Ensure the angle is within the range of 0 to 360 degrees
         if angle_deg < 0:
             angle_deg += 360
-        print(angle_deg)
+        #print(angle_deg)
         return angle_deg
                            
     # Toggle for manual corner selection
