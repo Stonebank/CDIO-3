@@ -116,14 +116,14 @@ class Main:
                          self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
                     drawLine(transformed, robot.x, robot.y,
                          self.goal0.x, self.goal0.y, object=self.goal0, robot=self.robot, blueframe=self.blueFrame)
-                    
+            #if (frameCount%20==0):
+            #    self.findChessBoard(transformed)       
 
             cv2.imshow("Transformed", transformed)
             cv2.imshow("Board", dst)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-            # if (frameCount%20==0):
-            #     cv2.imwrite("robot.png", transformed)
+            
         cap.release()
         cv2.destroyAllWindows(),
 
