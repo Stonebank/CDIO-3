@@ -169,9 +169,9 @@ class Main:
         point1 = [self.robot.x, self.robot.y]
         point2 = [ball.x, ball.y]
 
-        #if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
+        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
             #self.goAroundCross(ball)
-            #print("circle!")
+            return False
 
         angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
         self.remote.tank_turn_degrees(angle, 15)
@@ -213,7 +213,7 @@ class Main:
         #angle = getAngle(robot=self.robot, ball=tempCrossPosition, blueframe=self.blueFrame)
         if self.robot.y > 250 and self.robot.x < 375: #top left
 
-            tempDriveAround1 = Goal(self.robot.x, (self.robot.y))
+            tempDriveAround1 = Goal(self.robot.x, self.robot.y)
             tempDriveAround2 = Goal(self.robot.x, self.robot.y)
             print("a")
             
