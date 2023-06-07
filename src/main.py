@@ -111,7 +111,8 @@ class Main:
         cap.release()
         cv2.destroyAllWindows(),
 
-    def consumeClosestBall(self) : 
+    def consumeClosestBall(self) :
+        self.showClosestBall = True 
         ball = self.closetsBall
 
         offsetX = ball.x
@@ -136,14 +137,21 @@ class Main:
         if offsetX != ball.x or offsetY != ball.y:
             offset = Ball(offsetX, offsetY, 7, 10)
             self.rotateUntilZero(offset)
-            self.goForwardUntilZero(offset)
+            self.goForwardUntilZero(offset, False)
 
         self.rotateUntilZero(ball)
         self.remote.consume_balls()
-        self.goForwardUntilZero(ball)
+        self.goForwardUntilZero(ball, False)
+        self.remote.stop_balls_mec()
+        self.remote.stop_tank()
+        
+        if offsetX != ball.x or offsetY != ball.y:
+            self.remote.go_forward_distance(-30, 30)
+
 
     def score(self) : 
         self.showGoal = True
+        self.showClosestBall = False
         self.getIntoPositionToScore()
         self.remote.eject_balls()
         self.remote.stop_tank(),
@@ -167,14 +175,14 @@ class Main:
             angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
             count = count + 1
             
-    def goForwardUntilZero(self, ball):
-
-        distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
+    def goForwardUntilZero(self, ball, useGreenPlate):
+        
+        distance = getDistance(self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], ball.x, ball.y)
         if (distance > 30) :
             self.remote.go_forward_distance(distance-15, 70)
             self.rotateUntilZero(ball)
         
-        distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
+        distance = getDistance(self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], ball.x, ball.y)
         if (distance > 0) :
             self.remote.go_forward_distance(distance, 35)
 
@@ -192,7 +200,7 @@ class Main:
         # face the goal offset
         self.rotateUntilZero(goalOffset)
         # drive to goal offset
-        self.goForwardUntilZero(goalOffset) 
+        self.goForwardUntilZero(goalOffset, True) 
         # face the goal 
         self.rotateUntilZero(goal)
 
@@ -217,7 +225,7 @@ class Main:
                 angle = getAngle(robot=self.robot, object=tempDriveToCross, blueframe=self.blueFrame)
                 count = count + 1
 
-            self.goForwardUntilZero(tempDriveToCross)
+            self.goForwardUntilZero(tempDriveToCross, False)
 
             tempDriveAround1 = Goal(self.robot.x, self.robot.y)
             tempDriveAround2 = Goal(self.robot.x, self.robot.y)
