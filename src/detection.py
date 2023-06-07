@@ -7,13 +7,15 @@ from robot import Robot
 
 def detectOrangeBall(frame, robot):
 
-    orange_ball_hsv_values = {'hmin': 16, 'smin': 98,
-                              'vmin': 191, 'hmax': 21, 'smax': 255, 'vmax': 255}
+    orange_ball_hsv_values = {'hmin': 11, 'smin': 56,
+                              'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = orange_ball_hsv_values['hmin'], orange_ball_hsv_values['smin'], orange_ball_hsv_values['vmin']
     hmax, smax, vmax = orange_ball_hsv_values['hmax'], orange_ball_hsv_values['smax'], orange_ball_hsv_values['vmax']
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    cv2.GaussianBlur(hsv, (5, 5), 0)
 
     lower_range = np.array([hmin, smin, vmin])
     upper_range = np.array([hmax, smax, vmax])
@@ -44,7 +46,8 @@ def detectBalls(frame, robot):
 
     balls = []
 
-    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195, 'hmax': 179, 'smax': 113, 'vmax': 255}
+    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195,
+                  'hmax': 179, 'smax': 113, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -110,7 +113,7 @@ def detectRobot(frame):
                            2 + (box[0][1] - box[1][1]) ** 2)
         robotW = math.sqrt((box[1][0] - box[2][0]) **
                            2 + (box[1][1] - box[2][1]) ** 2)
-        
+
         return Robot(center[0], center[1], robotH, robotW)
 
 
