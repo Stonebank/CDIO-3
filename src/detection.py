@@ -1,6 +1,8 @@
+import math
+
 import cv2
 import numpy as np
-import math
+
 from ball import Ball
 from robot import Robot
 
@@ -81,9 +83,9 @@ def detectBalls(frame, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 70, 'smin': 38, 'vmin': 0,
-                  'hmax': 92, 'smax': 255, 'vmax': 255}
-    {'hmin': 70, 'smin': 38, 'vmin': 0, 'hmax': 92, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 27, 'smin': 0, 'vmin': 0,
+                  'hmax': 107, 'smax': 255, 'vmax': 255}
+    
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -116,8 +118,8 @@ def detectRobot(frame):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 91, 'smin': 171, 'vmin': 141,
-                  'hmax': 126, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 110, 'smin': 33, 'vmin': 0,
+                  'hmax': 161, 'smax': 232, 'vmax': 192}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -144,7 +146,7 @@ def detectBlueFrame(frame):
         return center
 
 
-def drawLine(frame, x1, y1, x2, y2, robot, ball, blueframe):
+def drawLine(frame, x1, y1, x2, y2, robot, object, blueframe):
     x1, y1 = int(x1), int(y1)
     x2, y2 = int(x2), int(y2)
 
@@ -153,7 +155,7 @@ def drawLine(frame, x1, y1, x2, y2, robot, ball, blueframe):
     midpoint = ((x1 + x2) // 2, (y1 + y2) // 2 - 50)
 
     cv2.putText(frame, "Angle: {:.2f}".format(getAngle(
-        robot, ball, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        robot, object, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     cv2.putText(frame, "Distance: {:.2f} cm".format(getDistance(x1, y1, x2, y2)), (
         midpoint[0], midpoint[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -165,9 +167,23 @@ def getDistance(x1, y1, x2, y2):
     return distance_in_pixels / 4.2
 
 
-def getAngle(robot, ball, blueframe):
+def getAngle(robot, object, blueframe):
     a = [robot.x - blueframe[0], robot.y - blueframe[1]]
-    b = [robot.x - ball.x, robot.y - ball.y]
+    b = [robot.x - object.x, robot.y - object.y]
     angle = np.math.atan2(np.linalg.det([a, b]), np.dot(a, b))
     angle = np.degrees(angle)
     return int(angle)
+
+
+def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
+    distance = math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
+    direction_vector = [(point2[0] - point1[0]) / distance, (point2[1] - point1[1]) / distance]
+    endpoint_vector = [point1[0] - circle_center[0], point1[1] - circle_center[1]]
+    dot_product = direction_vector[0] * endpoint_vector[0] + direction_vector[1] * endpoint_vector[1]
+    closest_point = [circle_center[0] + dot_product * direction_vector[0], circle_center[1] + dot_product * direction_vector[1]]
+    closest_distance = math.sqrt((closest_point[0] - circle_center[0])**2 + (closest_point[1] - circle_center[1])**2)
+    
+    if closest_distance <= circle_radius:
+        return True
+    else:
+        return False

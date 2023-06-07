@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 
-# nam
-
+from goalClass import Goal
 
 class FrameTransformer:
     manMode = False
@@ -11,7 +10,8 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = [[0, 0], [750, 0], [0, 500], [750, 500]]
-    goals = [[0, 250], [750, 250]]
+    goal = None
+    crossPosition = [0,0]
 
     def __init__(self):
         pass
@@ -19,7 +19,6 @@ class FrameTransformer:
     def transform(self, frame, frameCount):
         if (not self.manMode and frameCount % 20 == 0):
             self.corners = self.getCorners(frame)
-            self.goals = self.getGoals(self.corners)
 
         if (self.corners != None):
             # Coordinates for the corners
@@ -35,7 +34,7 @@ class FrameTransformer:
                 oldCoordinates, newCoordinates)
             transformed = cv2.warpPerspective(
                 frame, matrix, (self.width, self.height))
-            # Create circles to indicate detected corners and goals
+            # Create circles to indicate detected corners
             frame = cv2.circle(frame, tuple(
                 self.corners[0]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(
@@ -44,8 +43,6 @@ class FrameTransformer:
                 self.corners[2]), 20, (255, 0, 0), 2)
             frame = cv2.circle(frame, tuple(
                 self.corners[3]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[0]), 20, (255, 0, 0), 2)
-            frame = cv2.circle(frame, tuple(self.goals[1]), 20, (255, 0, 0), 2)
             return transformed
 
     def get_point(self, event, x, y, flags, param):
@@ -65,13 +62,13 @@ class FrameTransformer:
             elif (self.selectCount == 4):
                 self.corners[3] = [x, y]
                 print("Lower right(", x, ",", y, ")")
-            elif (self.selectCount == 5):
-                self.goals[0] = [x, y]
-                print("Left goal(", x, ",", y, ")")
-            elif (self.selectCount == 6):
-                self.goals[1] = [x, y]
-                print("Right goal(", x, ",", y, ")")
                 self.selectCount = 0
+
+    def get_goal(self, event, x, y, flags, param):
+
+        if event == cv2.EVENT_LBUTTONUP:
+            self.goal = Goal(x,y)
+            print("Goal is set ",x,y)
 
     def getCorners(self, frame):
         upper_left = [99999, 99999]
@@ -124,17 +121,45 @@ class FrameTransformer:
                         lower_right[1] = j
         return [upper_left, upper_right, lower_left, lower_right]
 
-    def getGoals(self, corners):
-        goal_left = [0, 99999]
-        goal_right = [99999, 0]
-        upper_left = corners[0]
-        upper_right = corners[1]
-        lower_left = corners[2]
-        lower_right = corners[3]
+    def getCross(self, frame):
 
-        goal_left[0] = int((upper_left[0] + lower_left[0]) / 2)
-        goal_left[1] = int((upper_left[1] + lower_left[1]) / 2)
-        goal_right[0] = int((upper_right[0] + lower_right[0]) / 2)
-        goal_right[1] = int((upper_right[1] + lower_right[1]) / 2)
+        # Define lower/upper color field for red
+        lower_red = np.array([0, 0, 200], dtype="uint8")
+        upper_red = np.array([100, 100, 255], dtype="uint8")
 
-        return [goal_left, goal_right]
+        # Frame dimensions
+        height = frame.shape[0]
+        width = frame.shape[1]
+
+        redMask = cv2.inRange(frame, lower_red, upper_red)
+
+        # Filter out everything that is not red
+        wall = frame.copy()
+        wall[np.where(redMask == 0)] = 0
+        # wall = cv2.GaussianBlur(wall,(41,41) ,5)
+        # Convert to grey
+        wall = cv2.cvtColor(wall, cv2.COLOR_BGR2GRAY)
+
+        a = 0
+        cross = [0, 0]
+
+        # Find corners
+        # dest = cv2.cornerHarris(np.float32(wall), 20, 3, 0.2496)
+        dest = cv2.cornerHarris(np.float32(wall), 10, 3, 0.24)
+        dest = cv2.dilate(dest, None)
+        thresh = 0.1*dest.max()
+        for j in range(0, dest.shape[0]):
+            for i in range(0, dest.shape[1]):
+                if (dest[j, i] > thresh):
+                    if (i < 700 and i > 50 and j < 450 and j > 50) :
+
+                        #cv2.circle(frame, ( int (i), int (j)), int(0), (0, 255, 0), -1)
+                        a += 1
+                        cross[0] += i
+                        cross[1] += j
+
+        #print("a: cross[0]: cross[1]: " + str(a) + " " + str(cross[0]) + " " + str(cross[1]))
+        if a != 0 :
+            return [int (cross[0]/a), int (cross[1]/a)]
+        else :
+            return [0,0]

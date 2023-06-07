@@ -14,7 +14,7 @@ class Remote:
         # If this fails, verify your IP connectivty via ``ping X.X.X.X``
         print(rpyc.__version__)
         print('attempting to connect')
-        conn = rpyc.classic.connect("169.254.165.31")
+        conn = rpyc.classic.connect("169.254.2.97")
         print('connected')
 
         # import ev3dev2 on the remote ev3dev
@@ -44,7 +44,7 @@ class Remote:
         self.motor_right.stop()
 
     def go_forward(self):
-        self.tank.on(0, 50)
+        self.tank.on(50, 50)
 
     def go_forward_rotations(self):
         self.tank.on_for_rotations(50, 50, 1)
@@ -52,10 +52,10 @@ class Remote:
     def go_back_rotations(self):
         self.tank.on_for_rotations(-50, -50, 1)
 
-    def go_forward_distance(self, distance):
-        wheel_size = 30
-        rotations = math.ceil((distance/wheel_size))
-        self.tank.on_for_rotations(50, 50, rotations)
+    def go_forward_distance(self, distance, speed):
+        wheel_size = 17.59 
+        rotations = (distance/wheel_size)*360
+        self.tank.on_for_degrees(speed, speed, rotations)
 
     def go_backwards(self):
         self.tank.on(0, -50)
@@ -66,12 +66,13 @@ class Remote:
     def go_right(self):
         self.tank.on(100, 5)
 
-    def tank_turn_degrees(self, degrees):
+    def tank_turn_degrees(self, degrees, speed):
         self.tank.turn_degrees(
-            speed=self.ev3dev2_motor.SpeedPercent(15),
+            speed=self.ev3dev2_motor.SpeedPercent(speed),
             target_angle=degrees,
-            error_margin=3,
+            error_margin=2,
         )
+            
 
     def stop_tank(self):
         self.tank.stop()
