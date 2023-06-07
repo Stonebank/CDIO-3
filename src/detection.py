@@ -9,6 +9,8 @@ from robot import Robot
 
 def detectOrangeBall(frame, robot):
 
+    # hsv values updated to be more accurate
+
     orange_ball_hsv_values = {'hmin': 11, 'smin': 56,
                               'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
 
