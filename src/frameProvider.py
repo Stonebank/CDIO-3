@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 
-# nam
-
+from goalClass import Goal
 
 class FrameTransformer:
     manMode = False
@@ -11,7 +10,7 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = [[0, 0], [750, 0], [0, 500], [750, 500]]
-    goal1 = None
+    goal = None
     crossPosition = [0,0]
 
     def __init__(self):
@@ -68,9 +67,8 @@ class FrameTransformer:
     def get_goal(self, event, x, y, flags, param):
 
         if event == cv2.EVENT_LBUTTONUP:
-
-            self.goal1 = (x,y)
-            print(x,y)
+            self.goal = Goal(x,y)
+            print("Goal is set ",x,y)
 
     def getCorners(self, frame):
         upper_left = [99999, 99999]

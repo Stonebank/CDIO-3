@@ -13,21 +13,6 @@ from remoteControl import Remote
 
 class Main:
 
-    goal0 = Goal
-    goal1 = Goal
-    goal0OfSet = Goal
-    goal1OfSet = Goal
-
-    goal0OfSet.x = 1
-    goal0OfSet.y = 1
-    goal1OfSet.x = 1
-    goal1OfSet.y = 1
-
-    goal0.x = 1
-    goal0.y = 1
-    goal1.x = 1
-    goal1.y = 1
-
     robotX, robotY, robotWidth, robotHeight = 0, 0, 0, 0
 
     robot = None
@@ -38,6 +23,9 @@ class Main:
 
     dAngle = 0
     dDistance = 0
+    
+    showGoal = False
+    showClosestBall = True
 
     def __init__(self):
         # Connect to robot
@@ -72,15 +60,9 @@ class Main:
             cap.release(),
             cv2.destroyAllWindows(), sys.exit()))
         
-        keyboard.add_hotkey("b", lambda: (
-            self.consumeClosestBall()
-        ))
+        keyboard.add_hotkey("b", lambda: (self.consumeClosestBall()))
         
-        keyboard.add_hotkey('g', lambda: (
-                self.score()
-            ))
-        
-      
+        keyboard.add_hotkey('g', lambda: (self.score()))
 
         while True:
             frameCount += 1
@@ -112,10 +94,12 @@ class Main:
                    # self.goAroundCross()
                     #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
                     self.dDistance = closestDistance
-                    drawLine(transformed, blueFrame[0], blueFrame[1],
-                         self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
-                    drawLine(transformed, robot.x, robot.y,
-                         self.goal0.x, self.goal0.y, object=self.goal0, robot=self.robot, blueframe=self.blueFrame)
+                    if (self.showClosestBall) :
+                        drawLine(transformed, blueFrame[0], blueFrame[1],
+                             self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
+                    if (self.showGoal) :
+                        drawLine(transformed, robot.x, robot.y,
+                            self.ft.goal.x, self.ft.goal.y, object=self.ft.goal, robot=self.robot, blueframe=self.blueFrame)
             #if (frameCount%20==0):
             #    self.findChessBoard(transformed)       
 
@@ -159,6 +143,7 @@ class Main:
         self.goForwardUntilZero(ball)
 
     def score(self) : 
+        self.showGoal = True
         self.getIntoPositionToScore()
         self.remote.eject_balls()
         self.remote.stop_tank(),
@@ -194,22 +179,22 @@ class Main:
             self.remote.go_forward_distance(distance, 35)
 
     def getIntoPositionToScore(self):
-        # Set variables
-        self.goal0.x, self.goal0.y = self.ft.goal1[0], self.ft.goal1[1]
+        
+        goal = self.ft.goal
 
+        # Calculate offset
         offset = 70
-        if (self.goal0.x > 300) :
+        if (goal.x > 300) :
             offset = -70
 
-        self.goal0OfSet.x = (self.goal0.x + offset)
-        self.goal0OfSet.y = self.goal0.y
+        goalOffset = Goal(goal.x + offset, goal.y)
         
         # face the goal offset
-        self.rotateUntilZero(self.goal0OfSet)
+        self.rotateUntilZero(goalOffset)
         # drive to goal offset
-        self.goForwardUntilZero(self.goal0OfSet) 
+        self.goForwardUntilZero(goalOffset) 
         # face the goal 
-        self.rotateUntilZero(self.goal0)
+        self.rotateUntilZero(goal)
 
     def goAroundCross(self, endpoint): # this function needs to ends with an rotateUntilZero(endpoint)
         tempangle = self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
