@@ -88,9 +88,8 @@ def detectBalls(frame, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 27, 'smin': 0, 'vmin': 0,
-                  'hmax': 107, 'smax': 255, 'vmax': 255}
-    
+    hsv_values = {'hmin': 52, 'smin': 18, 'vmin': 0,
+                  'hmax': 98, 'smax': 255, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -123,9 +122,9 @@ def detectRobot(frame):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 110, 'smin': 33, 'vmin': 0,
-                  'hmax': 161, 'smax': 232, 'vmax': 192}
-
+    hsv_values = {'hmin': 92, 'smin': 45, 'vmin': 0, 'hmax': 157, 'smax': 255, 'vmax': 255}
+    #hsv_values = {'hmin': 92, 'smin': 45, 'vmin': 32, 'hmax': 118, 'smax': 255, 'vmax': 255}
+    
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
 
@@ -181,13 +180,19 @@ def getAngle(robot, object, blueframe):
 
 
 def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
-    distance = math.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
-    direction_vector = [(point2[0] - point1[0]) / distance, (point2[1] - point1[1]) / distance]
-    endpoint_vector = [point1[0] - circle_center[0], point1[1] - circle_center[1]]
-    dot_product = direction_vector[0] * endpoint_vector[0] + direction_vector[1] * endpoint_vector[1]
-    closest_point = [circle_center[0] + dot_product * direction_vector[0], circle_center[1] + dot_product * direction_vector[1]]
-    closest_distance = math.sqrt((closest_point[0] - circle_center[0])**2 + (closest_point[1] - circle_center[1])**2)
-    
+    distance = math.sqrt((point2[0] - point1[0]) **
+                         2 + (point2[1] - point1[1])**2)
+    direction_vector = [(point2[0] - point1[0]) / distance,
+                        (point2[1] - point1[1]) / distance]
+    endpoint_vector = [point1[0] - circle_center[0],
+                       point1[1] - circle_center[1]]
+    dot_product = direction_vector[0] * endpoint_vector[0] + \
+        direction_vector[1] * endpoint_vector[1]
+    closest_point = [circle_center[0] + dot_product * direction_vector[0],
+                     circle_center[1] + dot_product * direction_vector[1]]
+    closest_distance = math.sqrt(
+        (closest_point[0] - circle_center[0])**2 + (closest_point[1] - circle_center[1])**2)
+
     if closest_distance <= circle_radius:
         return True
     else:

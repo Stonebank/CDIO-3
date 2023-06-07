@@ -29,7 +29,7 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        self.remote = Remote()
+        #self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -42,7 +42,7 @@ class Main:
         tvecs = None
 
         # Load saved data
-        data = np.load('ressources\calibrationvars.npz')
+        data = np.load('C:\\Users\\hassa\\Desktop\\123\\CDIO-3\\ressources\\calibrationvars.npz')
 
         cameraMatrix = data['arr_0']
         dist = data['arr_1']
@@ -67,13 +67,13 @@ class Main:
         while True:
             frameCount += 1
             ret, frame = cap.read()
-            dst = cv2.undistort(frame, cameraMatrix, dist, None, newCameraMatrix)
+            #dst = cv2.undistort(frame, cameraMatrix, dist, None, newCameraMatrix)
             #frame = cv2.imread('src/bane.jpg')
-            transformed = self.ft.transform(dst, frameCount)
+            transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
             #print("Transformed shape: ", transformed.shape)
-            self.crossPosition = self.ft.getCross(transformed)
-            cv2.circle(transformed, (self.crossPosition[0], self.crossPosition[1]), self.crossRadius, (0, 0, 255), 2)
+            #self.crossPosition = self.ft.getCross(transformed)
+            #cv2.circle(transformed, (self.crossPosition[0], self.crossPosition[1]), self.crossRadius, (0, 0, 255), 2)
             robot = detectRobot(transformed)
             blueFrame = detectBlueFrame(transformed)
             self.robot = robot
@@ -104,7 +104,7 @@ class Main:
             #    self.findChessBoard(transformed)       
 
             cv2.imshow("Transformed", transformed)
-            cv2.imshow("Board", dst)
+            cv2.imshow("Board", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
