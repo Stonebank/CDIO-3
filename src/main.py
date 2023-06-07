@@ -29,7 +29,9 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        #self.remote = Remote()
+        # Enter the ip address the Ev3 device has been given
+        ip_addr = ""
+        self.remote = Remote(ip_addr)
         # Set video input
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()

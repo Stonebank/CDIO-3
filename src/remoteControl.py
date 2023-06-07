@@ -8,13 +8,13 @@ import rpyc
 
 class Remote:
     
-    def __init__(self):
+    def __init__(self, ip_addr: str):
         # Create a RPyC connection to the remote ev3dev device.
         # Use the hostname or IP address of the ev3dev device.
         # If this fails, verify your IP connectivty via ``ping X.X.X.X``
         print(rpyc.__version__)
-        print('attempting to connect')
-        conn = rpyc.classic.connect("169.254.2.97")
+        print('attempting to connect to: ' + ip_addr)
+        conn = rpyc.classic.connect(ip_addr)
         print('connected')
 
         # import ev3dev2 on the remote ev3dev
