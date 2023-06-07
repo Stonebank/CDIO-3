@@ -200,18 +200,47 @@ class Main:
         tempangle = self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
         #tempCrossPosition = Goal(self.crossPosition[0], self.crossPosition[1])
         #angle = getAngle(robot=self.robot, ball=tempCrossPosition, blueframe=self.blueFrame)
-        if self.robot.y > 250 and self.robot.x < 375: #top left
+        # Test if we can drive around cross
+        if self.crossPosition[0] > 150 and self.crossPosition[0] < 600 and self.crossPosition[1] > 150 and self.crossPosition[1] < 350:
+            
+            # point to get close to cross
+            tempRobot = [self.robot.x, self.robot.y]
+            tempDriveToCross = Goal(self.createVektorBetweenTwoPoint(tempRobot, self.crossPosition, 15))
+
+            # turn towards cross
+            angle = getAngle(robot=self.robot, object=tempDriveToCross, blueframe=self.blueFrame)
+            self.remote.tank_turn_degrees(angle, 15)
+            angle = getAngle(robot=self.robot, object=tempDriveToCross, blueframe=self.blueFrame)
+            count = 0
+            while angle != 0 and count < 10:
+                self.remote.tank_turn_degrees(angle, 3)
+                angle = getAngle(robot=self.robot, object=tempDriveToCross, blueframe=self.blueFrame)
+                count = count + 1
+
+            self.goForwardUntilZero(tempDriveToCross)
 
             tempDriveAround1 = Goal(self.robot.x, self.robot.y)
             tempDriveAround2 = Goal(self.robot.x, self.robot.y)
             print("a")
             
-        elif self.robot.y > 250 and self.robot.x > 375: #top right:
+        else:
             print("b")
-        elif self.robot.y < 250 and self.robot.x > 375: #bot left:
-            print("c")
-        elif self.robot.y > 250 and self.robot.x > 375: #bot right:
-            print("d")
+
+        self.rotateUntilZero(endpoint)
+
+    def createVektorBetweenTwoPoint(robot, cross, length):
+        x = robot[0] - cross[0]
+        y = robot[1] - cross[1]
+
+        c = math.sqrt(x**2 + y**2)
+
+        x = x/c
+        y = y/c
+
+        x = x * length
+        y = y * length
+
+        return (x,y)
 
     def calculate_angle(self, x1, y1, x2, y2):
         # Calculate the differences in x and y coordinates
