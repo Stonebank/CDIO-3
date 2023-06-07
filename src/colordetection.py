@@ -2,7 +2,7 @@ import cv2
 import cvzone
 from cvzone import ColorFinder
 
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 cf = ColorFinder(True)
 
