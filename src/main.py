@@ -41,9 +41,9 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        #self.remote = Remote()
+        self.remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
 
@@ -109,7 +109,7 @@ class Main:
                         closestDistance = distance
                 if blueFrame is not None:
                     self.blueFrame = blueFrame
-                    self.goAroundCross()
+                   # self.goAroundCross()
                     #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
                     self.dDistance = closestDistance
                     drawLine(transformed, blueFrame[0], blueFrame[1],
@@ -134,20 +134,25 @@ class Main:
         offsetY = ball.y
 
         if ball.y < 50 :
-            offsetY = ball.y + 50
+            offsetY = ball.y + 80
+            print("offset 1")
             
         if ball.x < 50 :
-            offsetX = ball.x + 50
+            offsetX = ball.x + 80
+            print("offset 2")
 
         if ball.y > 450 :
-            offsetY = ball.y - 50
+            offsetY = ball.y - 80
+            print("offset 3")
 
         if ball.x > 700 :
-            offsetX = ball.x - 50
-
-        offset = Ball(offsetX, offsetY, 7, 10)
-        self.rotateUntilZero(offset)
-        self.goForwardUntilZero(offset)
+            offsetX = ball.x - 80
+            print("offset 4")
+        
+        if offsetX != ball.x or offsetY != ball.y:
+            offset = Ball(offsetX, offsetY, 7, 10)
+            self.rotateUntilZero(offset)
+            self.goForwardUntilZero(offset)
 
         self.rotateUntilZero(ball)
         self.remote.consume_balls()
@@ -161,32 +166,32 @@ class Main:
 
 
     def rotateUntilZero(self, ball):
-        angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
-        self.remote.tank_turn_degrees(angle, 20)
-        angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
-        count = 0
-        while angle != 0 and count < 20:
-            self.remote.tank_turn_degrees(angle, 3)
-            angle = getAngle(robot=self.robot, ball=ball, blueframe=self.blueFrame)
-            count = count + 1
-            
-    def goForwardUntilZero(self, ball):
         point1 = [self.robot.x, self.robot.y]
         point2 = [ball.x, ball.y]
 
-        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
-            self.goAroundCross()
+        #if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
+            #self.goAroundCross(ball)
+            #print("circle!")
+
+        angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
+        self.remote.tank_turn_degrees(angle, 15)
+        angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
+        count = 0
+        while angle != 0 and count < 10:
+            self.remote.tank_turn_degrees(angle, 3)
+            angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
+            count = count + 1
+            
+    def goForwardUntilZero(self, ball):
 
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
-        if (distance > 10) :
-            self.remote.go_forward_distance(distance-10, 80)
+        if (distance > 30) :
+            self.remote.go_forward_distance(distance-15, 70)
             self.rotateUntilZero(ball)
-        else :
-            self.remote.go_forward_distance(distance, 80)
         
         distance = getDistance(self.robot.x, self.robot.y, ball.x, ball.y)
         if (distance > 0) :
-            self.remote.go_forward_distance(distance, 40)
+            self.remote.go_forward_distance(distance, 35)
 
     def getIntoPositionToScore(self):
         # Set variables
@@ -202,11 +207,12 @@ class Main:
         # face the goal 
         self.rotateUntilZero(self.goal0)
 
-    def goAroundCross(self):
-        self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
+    def goAroundCross(self, endpoint): # this function needs to ends with an rotateUntilZero(endpoint)
+        tempangle = self.calculate_angle(self.robot.x, self.robot.y, self.blueFrame[0], self.blueFrame[1])
         #tempCrossPosition = Goal(self.crossPosition[0], self.crossPosition[1])
         #angle = getAngle(robot=self.robot, ball=tempCrossPosition, blueframe=self.blueFrame)
-        """if self.robot.y > 250 and self.robot.x < 375: #top left
+        if self.robot.y > 250 and self.robot.x < 375: #top left
+
             tempDriveAround1 = Goal(self.robot.x, (self.robot.y))
             tempDriveAround2 = Goal(self.robot.x, self.robot.y)
             print("a")
@@ -216,7 +222,7 @@ class Main:
         elif self.robot.y < 250 and self.robot.x > 375: #bot left:
             print("c")
         elif self.robot.y > 250 and self.robot.x > 375: #bot right:
-            print("d")"""
+            print("d")
 
     def calculate_angle(self, x1, y1, x2, y2):
         # Calculate the differences in x and y coordinates
@@ -232,7 +238,7 @@ class Main:
         # Ensure the angle is within the range of 0 to 360 degrees
         if angle_deg < 0:
             angle_deg += 360
-        #print(angle_deg)
+
         return angle_deg
                            
 
