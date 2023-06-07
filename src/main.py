@@ -197,7 +197,11 @@ class Main:
         # Set variables
         self.goal0.x, self.goal0.y = self.ft.goal1[0], self.ft.goal1[1]
 
-        self.goal0OfSet.x = (self.goal0.x + 50)
+        offset = 70
+        if (self.goal0.x > 300) :
+            offset = -70
+
+        self.goal0OfSet.x = (self.goal0.x + offset)
         self.goal0OfSet.y = self.goal0.y
         
         # face the goal offset
