@@ -1,4 +1,6 @@
+import subprocess
 import sys
+import time
 
 import cv2
 import keyboard
@@ -12,7 +14,6 @@ from remoteControl import Remote
 
 
 class Main:
-
     robotX, robotY, robotWidth, robotHeight = 0, 0, 0, 0
 
     robot = None
@@ -21,17 +22,12 @@ class Main:
     crossPosition = [0,0]
     crossRadius = 50
 
-    dAngle = 0
-    dDistance = 0
-    
     showGoal = False
     showClosestBall = True
 
     def __init__(self):
         # Connect to robot
-        # Enter the ip address the Ev3 device has been given
-        ip_addr = ""
-        self.remote = Remote(ip_addr)
+        self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -44,15 +40,15 @@ class Main:
         tvecs = None
 
         # Load saved data
-        data = np.load('C:\\Users\\hassa\\Desktop\\123\\CDIO-3\\ressources\\calibrationvars.npz')
+        # data = np.load('C:\\Users\\hassa\\Desktop\\123\\CDIO-3\\ressources\\calibrationvars.npz')
 
-        cameraMatrix = data['arr_0']
-        dist = data['arr_1']
-        rvecs = data['arr_2']
-        tvecs = data['arr_3']
+        # cameraMatrix = data['arr_0']
+        # dist = data['arr_1']
+        # rvecs = data['arr_2']
+        # tvecs = data['arr_3']
 
         h, w = (500, 750) 
-        newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
+        # newCameraMatrix, roi = cv2.getOptimalNewCameraMatrix(cameraMatrix, dist, (w,h), 1, (w,h))
 
         keyboard.add_hotkey('m', lambda: (
             self.toggleManMode()))
@@ -77,31 +73,30 @@ class Main:
             #self.crossPosition = self.ft.getCross(transformed)
             #cv2.circle(transformed, (self.crossPosition[0], self.crossPosition[1]), self.crossRadius, (0, 0, 255), 2)
             robot = detectRobot(transformed)
-            blueFrame = detectBlueFrame(transformed)
+            self.blueFrame = detectBlueFrame(transformed)
             self.robot = robot
             orangeBall = detectOrangeBall(transformed, robot)
             balls = detectBalls(transformed, robot)
-            
-            if balls and robot:
-                self.closetsBall = balls[0]
-                closestDistance = getDistance(
-                    self.robot.x, self.robot.y, self.closetsBall.x, self.closetsBall.y)
-                for ball in balls:
-                    distance = getDistance(robot.x, robot.y, ball.x, ball.y)
-                    if distance < closestDistance:
-                        self.closetsBall = ball
-                        closestDistance = distance
-                if blueFrame is not None:
-                    self.blueFrame = blueFrame
-                   # self.goAroundCross()
-                    #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
-                    self.dDistance = closestDistance
+            if robot and self.blueFrame is not None :
+                if balls :
+                    self.closetsBall = balls[0]
+                    closestDistance = getDistance(self.blueFrame[0], self.blueFrame[1], self.closetsBall.x, self.closetsBall.y)
+                    for ball in balls:
+                        distance = getDistance(self.blueFrame[0], self.blueFrame[1], ball.x, ball.y)
+                        if distance < closestDistance:
+                            self.closetsBall = ball
+                            closestDistance = distance
                     if (self.showClosestBall) :
-                        drawLine(transformed, blueFrame[0], blueFrame[1],
-                             self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
-                    if (self.showGoal) :
-                        drawLine(transformed, robot.x, robot.y,
-                            self.ft.goal.x, self.ft.goal.y, object=self.ft.goal, robot=self.robot, blueframe=self.blueFrame)
+                        drawLine(transformed, self.blueFrame[0], self.blueFrame[1],
+                                self.closetsBall.x, self.closetsBall.y, object=self.closetsBall, robot=self.robot, blueframe=self.blueFrame)
+                
+                
+                # self.goAroundCross()
+                #self.dAngle = getAngle(robot=self.robot, blueframe=self.blueFrame, ball=self.closetsBall)
+                
+                if (self.showGoal) :
+                    drawLine(transformed, robot.x, robot.y,
+                        self.ft.goal.x, self.ft.goal.y, object=self.ft.goal, robot=self.robot, blueframe=self.blueFrame)
             #if (frameCount%20==0):
             #    self.findChessBoard(transformed)       
 
@@ -115,28 +110,42 @@ class Main:
 
     def consumeClosestBall(self) :
         self.showClosestBall = True 
+        self.showGoal = False
         ball = self.closetsBall
 
         offsetX = ball.x
         offsetY = ball.y
 
         if ball.y < 50 :
-            offsetY = ball.y + 80
-            print("offset 1")
+            offsetY = ball.y + 60
             
         if ball.x < 50 :
-            offsetX = ball.x + 80
-            print("offset 2")
+            offsetX = ball.x + 60
 
         if ball.y > 450 :
-            offsetY = ball.y - 80
-            print("offset 3")
+            offsetY = ball.y - 60
 
         if ball.x > 700 :
-            offsetX = ball.x - 80
-            print("offset 4")
-        
+            offsetX = ball.x - 60
+           
         if offsetX != ball.x or offsetY != ball.y:
+            if offsetX != ball.x and offsetY != ball.y :
+                # Upper left corner
+                if ball.y < 50 and ball.x < 50 :
+                    offsetY = offsetY + 90
+                    # ball.x = ball.x + 1
+                # Lower left corner
+                elif ball.y > 450 and ball.x < 50 :
+                    offsetY = offsetY - 90
+                    # ball.x = ball.x + 1
+                # Upper right corner
+                elif ball.y < 50 and ball.x > 700 :
+                    offsetY = offsetY + 90
+                    # ball.x = ball.x - 1
+                # Lower right corner
+                elif ball.y > 450 and ball.x > 700 :
+                    offsetY = offsetY - 90
+                    # ball.x = ball.x - 1
             offset = Ball(offsetX, offsetY, 7, 10)
             self.rotateUntilZero(offset)
             self.goForwardUntilZero(offset, False)
@@ -144,6 +153,7 @@ class Main:
         self.rotateUntilZero(ball)
         self.remote.consume_balls()
         self.goForwardUntilZero(ball, False)
+        time.sleep(2)
         self.remote.stop_balls_mec()
         self.remote.stop_tank()
         
@@ -161,12 +171,12 @@ class Main:
 
 
     def rotateUntilZero(self, ball):
-        point1 = [self.robot.x, self.robot.y]
-        point2 = [ball.x, ball.y]
+        # point1 = [self.robot.x, self.robot.y]
+        # point2 = [ball.x, ball.y]
 
-        if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
+        # if is_line_crossing_circle(point1, point2, self.crossPosition, self.crossRadius) :
             #self.goAroundCross(ball)
-            return False
+            # return False
 
         angle = getAngle(robot=self.robot, object=ball, blueframe=self.blueFrame)
         self.remote.tank_turn_degrees(angle, 15)

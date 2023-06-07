@@ -3,18 +3,14 @@ import math
 
 import rpyc
 
-#
-
 
 class Remote:
     
-    def __init__(self, ip_addr: str):
+    def __init__(self):
         # Create a RPyC connection to the remote ev3dev device.
         # Use the hostname or IP address of the ev3dev device.
         # If this fails, verify your IP connectivty via ``ping X.X.X.X``
-        print(rpyc.__version__)
-        print('attempting to connect to: ' + ip_addr)
-        conn = rpyc.classic.connect(ip_addr)
+        conn = rpyc.classic.connect("ev3dev")
         print('connected')
 
         # import ev3dev2 on the remote ev3dev
@@ -54,7 +50,7 @@ class Remote:
 
     def go_forward_distance(self, distance, speed):
         wheel_size = 17.59 
-        rotations = (distance/wheel_size)*360
+        rotations = ((distance+3)/wheel_size)*360
         self.tank.on_for_degrees(speed, speed, rotations)
 
     def go_backwards(self):
