@@ -58,8 +58,7 @@ class Remote:
             kp=11.3, ki=0.05, kd=3.2,
             speed=speed,
             target_angle=angle,
-            follow_for=self.ev3dev2_motor.follow_for_ms,
-            ms=4500
+            follow_for=self.ev3dev2_motor.follow_for_forever,
         )
 
     def go_backwards(self):
