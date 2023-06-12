@@ -52,6 +52,15 @@ class Remote:
         wheel_size = 17.59 
         rotations = ((distance+2)/wheel_size)*360
         self.tank.on_for_degrees(speed, speed, rotations)
+    
+    def drive_to_ball(self, angle, speed):
+        self.tank.follow_gyro_angle(
+            kp=11.3, ki=0.05, kd=3.2,
+            speed=speed,
+            target_angle=angle,
+            follow_for=self.ev3dev2_motor.follow_for_ms,
+            ms=4500
+        )
 
     def go_backwards(self):
         self.tank.on(0, -50)
