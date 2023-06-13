@@ -10,7 +10,7 @@ class FrameTransformer:
     width = 750
     height = 500
     corners = [[0, 0], [750, 0], [0, 500], [750, 500]]
-    goal = None
+    goal = Goal(750, 250)
     crossPosition = [0,0]
 
     def __init__(self):

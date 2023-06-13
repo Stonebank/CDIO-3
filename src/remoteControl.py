@@ -6,11 +6,11 @@ import rpyc
 
 class Remote:
     
-    def __init__(self, ip_addr):
+    def __init__(self):
         # Create a RPyC connection to the remote ev3dev device.
         # Use the hostname or IP address of the ev3dev device.
         # If this fails, verify your IP connectivty via ``ping X.X.X.X``
-        conn = rpyc.classic.connect(ip_addr)
+        conn = rpyc.classic.connect("ev3dev")
         print('connected')
 
         # import ev3dev2 on the remote ev3dev
@@ -26,10 +26,11 @@ class Remote:
 
         # dist_sensor = ev3dev2_sensor.ColorSensor()
         self.tank.gyro = self.ev3dev2_sensor.GyroSensor()
+        self.tank.gyro.calibrate()
 
     def consume_balls(self):
-        self.motor_right.run_forever(speed_sp=600)
-        self.motor_left.run_forever(speed_sp=-600)
+        self.motor_right.run_forever(speed_sp=1000)
+        self.motor_left.run_forever(speed_sp=-1000)
 
     def eject_balls(self):
         self.motor_right.run_forever(speed_sp=-600)
@@ -50,7 +51,7 @@ class Remote:
 
     def go_forward_distance(self, distance, speed):
         wheel_size = 17.59 
-        rotations = ((distance+2)/wheel_size)*360
+        rotations = ((distance+5)/wheel_size)*360
         self.tank.on_for_degrees(speed, speed, rotations)
     
     def drive_to_ball(self, angle, speed):
@@ -74,7 +75,7 @@ class Remote:
         self.tank.turn_degrees(
             speed=self.ev3dev2_motor.SpeedPercent(speed),
             target_angle=degrees,
-            error_margin=2,
+            error_margin=3,
         )
             
 
