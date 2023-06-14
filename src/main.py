@@ -26,6 +26,8 @@ class Main:
     showGoal = False
     showClosestBall = True
 
+    previousFrames = []
+
     def __init__(self):
         # Connect to robot
         self.remote = Remote()
@@ -57,6 +59,12 @@ class Main:
             ret, frame = cap.read()
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
+            if (len(self.previousFrames) < 10) :
+                self.previousFrames.append(transformed)
+            else : 
+                self.previousFrames.pop(0)
+                self.previousFrames.append(transformed)
+
             robot = detectRobot(transformed)
             blueFrame = detectBlueFrame(transformed)
             if (blueFrame is not None):
@@ -67,7 +75,7 @@ class Main:
             cross = detectCross(transformed)
             if (cross is not None):
                 self.cross = cross
-            balls = detectBalls(transformed, robot)
+            balls = detectBalls(self.previousFrames, robot)
 
             if self.robot and self.blueFrame is not None:
                 if balls:
@@ -118,22 +126,22 @@ class Main:
 
             if ball.y < yLower:
                 offsetY = ball.y + 100
-                ball = Ball(ball.x-10, ball.y-10, 7, 10)
+                ball = Ball(ball.x-10, ball.y-10)
                 print("ball upper side")
 
             if ball.x < xLower:
                 offsetX = ball.x + 100
-                ball = Ball(ball.x-10, ball.y-5, 7, 10)
+                ball = Ball(ball.x-10, ball.y-5)
                 print("ball left side")
 
             if ball.y > yUpper:
                 offsetY = ball.y - 100
-                ball = Ball(ball.x, ball.y+15, 7, 10)
+                ball = Ball(ball.x, ball.y+15)
                 print("ball lower side")
 
             if ball.x > xUpper:
                 offsetX = ball.x - 100
-                ball = Ball(ball.x+30, ball.y, 7, 10)
+                ball = Ball(ball.x+30, ball.y)
                 print("ball right side")
 
             if offsetX != ball.x or offsetY != ball.y:
@@ -159,8 +167,8 @@ class Main:
                         print("Lower right")
                         offsetY = ball.y - 20
                         offsetX = ball.x - 200
-                        ball = Ball(ball.x+2, ball.y-5, 7, 10)
-                offset = Ball(offsetX, offsetY, 7, 10)
+                        ball = Ball(ball.x+2, ball.y-5)
+                offset = Ball(offsetX, offsetY)
                 self.driveToObject(offset, True)
 
             ballInsideCross = ball.x > self.cross.x-(self.cross.width/2) and ball.x < self.cross.x+(
@@ -214,19 +222,20 @@ class Main:
                 self.driveToObject(offset, True)
                 
                 # Ball upper right
-                if (object.x > self.cross.x and object.y < self.cross.y):
+                if (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower left
-                elif (object.x < self.cross.x and object.y > self.cross.y):
+                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y + ((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
                 # Ball lower right
                 elif (object.x > self.cross.x and object.y > self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
-                    offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
-                    self.driveToObject(offset, True)
+                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                        offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
+                        self.driveToObject(offset, True)
 
                 print("robot upper left")
             
@@ -236,17 +245,18 @@ class Main:
                 self.driveToObject(offset, True)
                 
                 # Ball upper left
-                if (object.x < self.cross.x and object.y < self.cross.y):
+                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball upper right
                 elif (object.x > self.cross.x and object.y < self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
-                    offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
-                    self.driveToObject(offset, True)
+                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                        offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
+                        self.driveToObject(offset, True)
                 # Ball lower right
-                elif (object.x > self.cross.x and object.y > self.cross.y):
+                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
 
@@ -257,19 +267,20 @@ class Main:
                 self.driveToObject(offset, True)
 
                 # Ball upper left
-                if (object.x < self.cross.x and object.y < self.cross.y):
+                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower right
-                elif (object.x > self.cross.x and object.y > self.cross.y):
+                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
                 # Ball lower left
                 elif (object.x < self.cross.x and object.y > self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
-                    offset = Goal(self.cross.x/2, self.cross.y + ((500-self.cross.y)/2))
-                    self.driveToObject(offset, True)
+                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                        offset = Goal(self.cross.x/2, self.cross.y + ((500-self.cross.y)/2))
+                        self.driveToObject(offset, True)
 
                 print("robot upper right")
             # Robot lower right corner
@@ -281,14 +292,15 @@ class Main:
                 if (object.x < self.cross.x and object.y < self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
-                    offset = Goal(self.cross.x/2, self.cross.y/2)
-                    self.driveToObject(offset, True)
+                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                        offset = Goal(self.cross.x/2, self.cross.y/2)
+                        self.driveToObject(offset, True)
                 # Ball upper right
-                elif (object.x > self.cross.x and object.y < self.cross.y):
+                elif (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower left
-                elif (object.x < self.cross.x and object.y > self.cross.y):
+                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
 

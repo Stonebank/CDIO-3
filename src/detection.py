@@ -44,49 +44,59 @@ def detectOrangeBall(frame, robot):
                 cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                            int(max(w, h) / 2), (0, 255, 0), 2)
                 return Ball(x + radius / 2, y +
-                            radius / 2, radius, 0)
+                            radius / 2)
     return None
 
 
-def detectBalls(frame, robot):
+def detectBalls(previousFrames, robot):
 
-    balls = []
-
+    
     hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195,
                   'hmax': 179, 'smax': 113, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    filteredBalls = []
 
-    cv2.GaussianBlur(hsv, (5, 5), 0)
+    for frame in previousFrames :
+        balls = []
+ 
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_range = np.array([hmin, smin, vmin])
-    upper_range = np.array([hmax, smax, vmax])
+        cv2.GaussianBlur(hsv, (5, 5), 0)
 
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.inRange(hsv, lower_range, upper_range)
-    mask = cv2.erode(mask, kernel)
-    mask = cv2.dilate(mask, kernel)
+        lower_range = np.array([hmin, smin, vmin])
+        upper_range = np.array([hmax, smax, vmax])
 
-    contours, _ = cv2.findContours(
-        mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        kernel = np.ones((5, 5), np.uint8)
+        mask = cv2.inRange(hsv, lower_range, upper_range)
+        mask = cv2.erode(mask, kernel)
+        mask = cv2.dilate(mask, kernel)
 
-    if len(contours) > 0:
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if area > 100:
-                (x, y, w, h) = cv2.boundingRect(contour)
-                radius = int(w / 2)
-                if radius > 9 or radius < 7:
-                    continue
-                if robot and x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
-                    continue
-                cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
-                           int(max(w, h) / 2), (0, 255, 0), 2)
-                balls.append(Ball(x + radius / 2, y +
-                             radius / 2, radius, len(balls)))
+        contours, _ = cv2.findContours(
+            mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        if len(contours) > 0:
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > 100:
+                    (x, y, w, h) = cv2.boundingRect(contour)
+                    radius = int(w / 2)
+                    if radius > 9 or radius < 7:
+                        continue
+                    if robot and x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
+                        continue
+                    cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
+                            int(max(w, h) / 2), (0, 255, 0), 2)
+                    balls.append(Ball(x + radius / 2, y +
+                                radius / 2))
+        if (len(balls) > 0) :
+            for ball in filteredBalls :
+                if ball not in balls :
+                    filteredBalls.remove(ball)
+        else :
+            filteredBalls = balls
 
     return balls
 
@@ -127,7 +137,7 @@ def detectRobot(frame):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 100, 'smin': 95, 'vmin': 0, 'hmax': 157, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 106, 'smin': 106, 'vmin': 167, 'hmax': 166, 'smax': 255, 'vmax': 255}
     #hsv_values = {'hmin': 92, 'smin': 45, 'vmin': 32, 'hmax': 118, 'smax': 255, 'vmax': 255}
     
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
