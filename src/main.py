@@ -72,10 +72,12 @@ class Main:
             if (robot is not None):
                 self.robot = robot
             # orangeBall = detectOrangeBall(transformed, robot)
+            
+            balls = detectBalls(self.previousFrames, robot)
+
             cross = detectCross(transformed)
             if (cross is not None):
                 self.cross = cross
-            balls = detectBalls(self.previousFrames, robot)
 
             if self.robot and self.blueFrame is not None:
                 if balls:
@@ -175,30 +177,19 @@ class Main:
                 self.cross.width/2) and ball.y > self.cross.y-(self.cross.height/2) and ball.y < self.cross.y+(self.cross.height/2)
             # If ball inside cross
             if (ballInsideCross):
-                # Ball upper left
-                if (ball.x < self.cross.x and ball.y < self.cross.y):
-                    offset = Goal(self.cross.x-(self.cross.width/2)-50,
-                                  self.cross.y-(self.cross.height/2))
-                    self.driveToObject(offset, False)
-                # Ball upper right
-                elif (ball.x > self.cross.x and ball.y < self.cross.y):
-                    offset = Goal(self.cross.x+(self.cross.width/2)+50,
-                                  self.cross.y-(self.cross.height/2))
-                    self.driveToObject(offset, False)
-                # Ball lower left
-                elif (ball.x < self.cross.x and ball.y > self.cross.y):
-                    offset = Goal(self.cross.x-(self.cross.width/2)-50,
-                                  self.cross.y+(self.cross.height/2))
-                    self.driveToObject(offset, False)
-                # Ball lower right
-                elif (ball.x > self.cross.x and ball.y > self.cross.y):
-                    offset = Goal(self.cross.x+(self.cross.width/2)+50,
-                                  self.cross.y+(self.cross.height/2))
-                    self.driveToObject(offset, False)
-
+                closestOffset = self.cross.offsets[0]
+                closestOffsetDist = 999999
+                for offset in self.cross.offsets :
+                    offsetDist = getDistance(ball.x, ball.y, offset[0], offset[1])
+                    if offsetDist < closestOffsetDist :
+                        closestOffset = offset
+                        closestOffsetDist = offsetDist
+                offset = Ball(closestOffset[0], closestOffset[1]) 
+                self.driveToObject(offset, False, 20)
+               
             self.remote.consume_balls()
 
-            self.driveToObject(ball, False)
+            self.driveToObject(ball, False, 20 if ballInsideCross else 50)
             # self.rotateUntilZero(ball)
 
             # self.goForwardUntilZero(ball, False)
@@ -330,7 +321,7 @@ class Main:
         if (count == 20):
             print("Rotate give up")
 
-    def driveToObject(self, object, useGreenPlate):
+    def driveToObject(self, object, useGreenPlate, speed=50):
         angle = getAngle(robot=self.robot, object=object,
                          blueframe=self.blueFrame)
         self.remote.tank_turn_degrees(angle, 15)
@@ -338,11 +329,11 @@ class Main:
             self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], object.x, object.y)
         smallestDistance = distance
 
-        while (distance > 6 and distance < smallestDistance+2):
+        while (distance > 8 and distance < smallestDistance+2):
             angle = getAngle(robot=self.robot, object=object,
                              blueframe=self.blueFrame)
-            leftSpeed = 50
-            rightSpeed = 50
+            leftSpeed = speed
+            rightSpeed = speed
             if (angle > 0):
                 rightSpeed = rightSpeed - (angle/1.8)
             elif (angle < 0):

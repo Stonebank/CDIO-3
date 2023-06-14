@@ -239,9 +239,11 @@ def detectCross(frame) :
         box = np.int0(box)
 
         center = np.mean(box, axis=0)
+
+        offsets = [None]*4
         
         # Drawing cross lines
-        line_length = 80  # Adjust this value to change the length of the lines
+        line_length = 120  # Adjust this value to change the length of the lines
         angle = rect[2]  # Angle of rotation
         rad_angle = math.radians(angle)  # Convert angle to radians
         cos_val = math.cos(rad_angle)  # Cosine of angle
@@ -250,11 +252,15 @@ def detectCross(frame) :
         y1 = int(center[1] + line_length * cos_val)  # Starting y-coordinate of line
         x2 = int(center[0] + line_length * sin_val)  # Ending x-coordinate of line
         y2 = int(center[1] - line_length * cos_val)  # Ending y-coordinate of line
+        offsets[0] = (x1, y1)
+        offsets[1] = (x2, y2)
         cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw first line
         x1 = int(center[0] - line_length * cos_val)  # Starting x-coordinate of line
         y1 = int(center[1] - line_length * sin_val)  # Starting y-coordinate of line
         x2 = int(center[0] + line_length * cos_val)  # Ending x-coordinate of line
         y2 = int(center[1] + line_length * sin_val)  # Ending y-coordinate of line
+        offsets[2] = (x1, y1)
+        offsets[3] = (x2, y2)
         cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw second line
 
         # Drawing box around cross
@@ -264,8 +270,10 @@ def detectCross(frame) :
         rect_w *= 2  # Double the width
         rect_h *= 2  # Double the height
         cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (0, 255, 0), 3)
+        for offset in offsets :
+            cv2.circle(center=offset, thickness=10, radius=0, img=frame, color=(0, 0, 255))
         # if (rect_h > 148 and rect_h < 175 and rect_w > 148 and rect_w < 175) :
-        return Cross(center[0], center[1], rect_h, rect_w)
+        return Cross(center[0], center[1], rect_h, rect_w, offsets)
     
 def lineIntersectsCross(robot, ball, cross):
     half_w = cross.width / 2
