@@ -14,13 +14,8 @@ from remoteControl import Remote
 
 
 class Main:
-    robotX, robotY, robotWidth, robotHeight = 0, 0, 0, 0
-
     robot = None
-    blueFrame = None
     closestBall = None
-    crossPosition = [0, 0]
-    crossRadius = 50
     cross = None
 
     showGoal = False
@@ -30,7 +25,7 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        self.remote = Remote()
+        # self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -66,40 +61,47 @@ class Main:
                 self.previousFrames.append(transformed)
 
             robot = detectRobot(transformed)
-            blueFrame = detectBlueFrame(transformed)
-            if (blueFrame is not None):
-                self.blueFrame = blueFrame
-            if (robot is not None):
-                self.robot = robot
+            # if (robot is not None and robot.greenFrame is not None and robot.blueFrame is not None):
+            self.robot = robot
             # orangeBall = detectOrangeBall(transformed, robot)
             
-            balls = detectBalls(self.previousFrames, robot)
+            balls = detectBalls(self.previousFrames, self.robot)
 
             cross = detectCross(transformed)
             if (cross is not None):
                 self.cross = cross
 
-            if self.robot and self.blueFrame is not None:
+            if self.robot is not None:
+                
+                # robotBox = self.robot.box
+                # # Draw a line on the image
+                # cv2.line(transformed, tuple(robotBox[0]), tuple(robotBox[1]), (0, 255, 0), 3)
+                # cv2.line(transformed, tuple(robotBox[0]), tuple(robotBox[2]), (0, 255, 0), 3)
+                # cv2.line(transformed, tuple(robotBox[1]), tuple(robotBox[3]), (0, 255, 0), 3)
+                # cv2.line(transformed, tuple(robotBox[2]), tuple(robotBox[3]), (0, 255, 0), 3)
+
+                cv2.drawContours(transformed, [self.robot.greenFrame.box], 0, (0, 255, 0), 3)
+                cv2.drawContours(transformed, [self.robot.blueFrame.box], 0, (0, 255, 0), 3)
                 if balls:
                     self.closestBall = balls[0]
                     closestDistance = getDistance(
-                        self.blueFrame[0], self.blueFrame[1], self.closestBall.x, self.closestBall.y)
+                        self.robot.blueFrame.x, self.robot.blueFrame.y, self.closestBall.x, self.closestBall.y)
                     for ball in balls:
                         distance = getDistance(
-                            self.blueFrame[0], self.blueFrame[1], ball.x, ball.y)
+                            self.robot.blueFrame.x, self.robot.blueFrame.y, ball.x, ball.y)
                         if distance < closestDistance:
                             self.closestBall = ball
                             closestDistance = distance
                     if (self.showClosestBall):
-                        drawLine(transformed, self.blueFrame[0], self.blueFrame[1],
-                                 self.closestBall.x, self.closestBall.y, object=self.closestBall, robot=self.robot, blueframe=self.blueFrame)
+                        drawLine(transformed, self.robot.blueFrame.x, self.robot.blueFrame.y,
+                                 self.closestBall.x, self.closestBall.y, robot=self.robot)
 
                 else:
                     self.closestBall = None
                 
                 if (self.showGoal):
                     drawLine(transformed, self.robot.x, self.robot.y,
-                             self.ft.goal.x, self.ft.goal.y, object=self.ft.goal, robot=self.robot, blueframe=self.blueFrame)
+                             self.ft.goal.x, self.ft.goal.y, robot=self.robot)
            
             cv2.imshow("Transformed", transformed)
             cv2.imshow("Board", frame)
@@ -202,29 +204,30 @@ class Main:
             self.remote.stop_tank()
         self.score()
 
+    
     def goAroundCross(self, object):
-        if (self.cross is not None and lineIntersectsCross(self.robot, object, self.cross)):
+        if (self.cross is not None and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
             # while (lineIntersectsCross(self.robot, object, self.cross)):
             print("Cross intercept")
             # Make path around cross
             # Robot upper left corner
-            if (self.robot.x < self.cross.x and self.robot.y < self.cross.y):
+            if (self.robot.greenFrame.x < self.cross.x and self.robot.greenFrame.y < self.cross.y):
                 offset = Goal(self.cross.x/2, self.cross.y/2)
                 self.driveToObject(offset, True)
                 
                 # Ball upper right
-                if (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                if (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower left
-                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y + ((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
                 # Ball lower right
                 elif (object.x > self.cross.x and object.y > self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
-                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                    if (lineIntersectsCross(self.robot.greenFrame, object, self.cross)) :
                         offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                         self.driveToObject(offset, True)
 
@@ -236,7 +239,7 @@ class Main:
                 self.driveToObject(offset, True)
                 
                 # Ball upper left
-                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball upper right
@@ -247,7 +250,7 @@ class Main:
                         offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                         self.driveToObject(offset, True)
                 # Ball lower right
-                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
 
@@ -258,18 +261,18 @@ class Main:
                 self.driveToObject(offset, True)
 
                 # Ball upper left
-                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                if (object.x < self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower right
-                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                elif (object.x > self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
                 # Ball lower left
                 elif (object.x < self.cross.x and object.y > self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
-                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                    if (lineIntersectsCross(self.robot.greenFrame, object, self.cross)) :
                         offset = Goal(self.cross.x/2, self.cross.y + ((500-self.cross.y)/2))
                         self.driveToObject(offset, True)
 
@@ -283,15 +286,15 @@ class Main:
                 if (object.x < self.cross.x and object.y < self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
-                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                    if (lineIntersectsCross(self.robot.greenFrame, object, self.cross)) :
                         offset = Goal(self.cross.x/2, self.cross.y/2)
                         self.driveToObject(offset, True)
                 # Ball upper right
-                elif (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                elif (object.x > self.cross.x and object.y < self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                     self.driveToObject(offset, True)
                 # Ball lower left
-                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot, object, self.cross)):
+                elif (object.x < self.cross.x and object.y > self.cross.y and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
                     offset = Goal(self.cross.x/2, self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
 
@@ -307,31 +310,26 @@ class Main:
         self.remote.stop_balls_mec()
 
     def rotateUntilZero(self, ball):
-        angle = getAngle(robot=self.robot, object=ball,
-                         blueframe=self.blueFrame)
+        angle = getAngle(robot=self.robot, object=ball)
         self.remote.tank_turn_degrees(angle, 15)
-        angle = getAngle(robot=self.robot, object=ball,
-                         blueframe=self.blueFrame)
+        angle = getAngle(robot=self.robot, object=ball)
         count = 0
         while (angle > 0 or angle < 0) and count < 5:
             self.remote.tank_turn_degrees(angle, 3)
-            angle = getAngle(robot=self.robot, object=ball,
-                             blueframe=self.blueFrame)
+            angle = getAngle(robot=self.robot, object=ball)
             count = count + 1
         if (count == 20):
             print("Rotate give up")
 
     def driveToObject(self, object, useGreenPlate, speed=50):
-        angle = getAngle(robot=self.robot, object=object,
-                         blueframe=self.blueFrame)
+        angle = getAngle(robot=self.robot, object=object)
         self.remote.tank_turn_degrees(angle, 15)
         distance = getDistance(
-            self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], object.x, object.y)
+            self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, object.x, object.y)
         smallestDistance = distance
 
-        while (distance > 8 and distance < smallestDistance+2):
-            angle = getAngle(robot=self.robot, object=object,
-                             blueframe=self.blueFrame)
+        while (self.robot is not None and distance > 8 and distance < smallestDistance+2):
+            angle = getAngle(robot=self.robot, object=object)
             leftSpeed = speed
             rightSpeed = speed
             if (angle > 0):
@@ -341,7 +339,7 @@ class Main:
              
             self.remote.tank.on(leftSpeed, rightSpeed)
             distance = getDistance(
-                self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], object.x, object.y)
+                self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, object.x, object.y)
             if (distance < smallestDistance):
                 smallestDistance = distance
         self.remote.stop_tank()
@@ -349,13 +347,13 @@ class Main:
     def goForwardUntilZero(self, ball, useGreenPlate):
 
         distance = getDistance(
-            self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], ball.x, ball.y)
+            self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, ball.x, ball.y)
         if (distance > 40):
             self.remote.go_forward_distance(distance-25, 65)
             self.rotateUntilZero(ball)
 
         distance = getDistance(
-            self.robot.x if useGreenPlate else self.blueFrame[0], self.robot.y if useGreenPlate else self.blueFrame[1], ball.x, ball.y)
+            self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, ball.x, ball.y)
         if (distance > 0):
             self.remote.go_forward_distance(distance, 50)
 

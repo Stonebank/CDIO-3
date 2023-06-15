@@ -5,6 +5,7 @@ import cvzone
 import numpy as np
 
 from ball import Ball
+from frame import Frame
 from cross import Cross
 from robot import Robot
 
@@ -85,8 +86,8 @@ def detectBalls(previousFrames, robot):
                     radius = int(w / 2)
                     if radius > 9 or radius < 7:
                         continue
-                    if robot and x > robot.x and x < robot.x + robot.width and y > robot.y and y < robot.y + robot.height:
-                        continue
+                    # if robot is not None and is_point_inside_rectangle((x,y), robot.box)==True:
+                    #     continue
                     cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
                             int(max(w, h) / 2), (0, 255, 0), 2)
                     balls.append(Ball(x + radius / 2, y +
@@ -125,19 +126,87 @@ def detectRobot(frame):
         box = cv2.boxPoints(rect)
         box = np.int0(box)
 
-        cv2.drawContours(frame, [box], 0, (0, 255, 0), 3)
         center = np.mean(box, axis=0)
-        robotH = math.sqrt((box[0][0] - box[1][0]) **
-                           2 + (box[0][1] - box[1][1]) ** 2)
-        robotW = math.sqrt((box[1][0] - box[2][0]) **
-                           2 + (box[1][1] - box[2][1]) ** 2)
+        # robotH = math.sqrt((box[0][0] - box[1][0]) **
+        #                    2 + (box[0][1] - box[1][1]) ** 2)
+        # robotW = math.sqrt((box[1][0] - box[2][0]) **
+        #                    2 + (box[1][1] - box[2][1]) ** 2)
 
-        return Robot(center[0], center[1], robotH, robotW)
+        blueFrame = detectBlueFrame(frame)
+        if blueFrame is not None :
+            robot = Robot(Frame(center[0], center[1], box), blueFrame)
+            robot.box = getRobotBox(robot)
+            return robot
 
+def getRobotBox(robot) :
+        if robot.greenFrame is not None and robot.blueFrame is not None:
+        
+            # Define the distance between the two lines
+            distance = 40
+
+            # Calculate the slope of the line
+            s = (robot.blueFrame.x - robot.greenFrame.x)
+            #print(s)
+            if s==0 or s==0.0 :
+                s = 0.01
+            
+            slope = (robot.blueFrame.y - robot.greenFrame.y) / s
+            # print(slope)
+
+            # Calculate the angle of the line in radians
+            angle = np.arctan(slope)
+
+            # Calculate the x and y offsets for the parallel line
+            x_offset = distance * np.sin(angle)
+            y_offset = distance * np.cos(angle)
+
+            # New points for the parallel line
+            pt1 = (int(robot.greenFrame.x - x_offset), int(robot.greenFrame.y + y_offset))
+            pt2 = (int(robot.blueFrame.x - x_offset), int(robot.blueFrame.y + y_offset))
+            pt3 = (int(robot.greenFrame.x + x_offset), int(robot.greenFrame.y - y_offset))
+            pt4 = (int(robot.blueFrame.x + x_offset), int(robot.blueFrame.y - y_offset))
+
+            # Define the length to extend the line by
+            # length = 50
+
+            # # Calculate the x and y distances to extend the line by
+            # dx = length / (2 * (1 + slope**2))**0.5
+            # dy = slope * dx
+
+            # # # Calculate the new points
+            # pt1 = (int(pt1[0] - dx), int(pt1[1] - dy))
+            # pt2 = (int(pt2[0] + dx), int(pt2[1] + dy))
+            # pt3 = (int(pt3[0] - dx), int(pt3[1] - dy))
+            # pt4 = (int(pt4[0] + dx), int(pt4[1] + dy))
+
+            box = np.array([pt1, pt2, pt3, pt4])
+
+            return box
+
+# TODO - Not done
+def is_point_inside_rectangle(point, rectangle):
+    
+    # Step 1: Define the coordinates of the rectangle's vertices
+    # print(rectangle)
+    x1,y1 = rectangle[0]
+    x2,y2 = rectangle[1]
+    x3,y3 = rectangle[2]
+    x4,y4 = rectangle[3]
+    D1 = (x2 - x1) * (point[1] - y1) - (point[0] - x1) * (y2 - y1)
+    D2 = (x3 - x2) * (point[1] - y2) - (point[0] - x2) * (y3 - y2)
+    D3 = (x4 - x3) * (point[1] - y3) - (point[0] - x3) * (y4 - y3)
+    D4 = (x1 - x4) * (point[1] - y4) - (point[0] - x4) * (y1 - y4)
+    print("D1: ",D1)
+    print("D2: ",D2)
+    print("D3: ",D3)
+    print("D4: ",D4)
+    if (D1 < 0 and D2 > 0 and D3 > 0 and D4 < 0) :
+        return True
+    return False
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 106, 'smin': 106, 'vmin': 167, 'hmax': 166, 'smax': 255, 'vmax': 255}
+    hsv_values = {'hmin': 98, 'smin': 61, 'vmin': 0, 'hmax': 159, 'smax': 255, 'vmax': 255}
     #hsv_values = {'hmin': 92, 'smin': 45, 'vmin': 32, 'hmax': 118, 'smax': 255, 'vmax': 255}
     
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
@@ -158,14 +227,13 @@ def detectBlueFrame(frame):
         rect = cv2.minAreaRect(largest_contour)
         box = cv2.boxPoints(rect)
         box = np.int0(box)
-
-        cv2.drawContours(frame, [box], 0, (0, 255, 0), 3)
+        
         center = np.mean(box, axis=0)
 
-        return center
+        return Frame(center[0], center[1], box)
 
 
-def drawLine(frame, x1, y1, x2, y2, robot, object, blueframe):
+def drawLine(frame, x1, y1, x2, y2, robot):
     x1, y1 = int(x1), int(y1)
     x2, y2 = int(x2), int(y2)
 
@@ -177,7 +245,7 @@ def drawLine(frame, x1, y1, x2, y2, robot, object, blueframe):
     #     robot, object, blueframe)), (50,50))
 
     cv2.putText(frame, "Angle: {:.2f}".format(getAngle(
-        robot, object, blueframe)), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        robot, Ball(x2, y2))), midpoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
     cv2.putText(frame, "Distance: {:.2f} cm".format(getDistance(x1, y1, x2, y2)), (
         midpoint[0], midpoint[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
@@ -189,9 +257,9 @@ def getDistance(x1, y1, x2, y2):
     return distance_in_pixels / 4.2
 
 
-def getAngle(robot, object, blueframe):
-    a = [robot.x - blueframe[0], robot.y - blueframe[1]]
-    b = [robot.x - object.x, robot.y - object.y]
+def getAngle(robot, object):
+    a = [robot.greenFrame.x - robot.blueFrame.x, robot.greenFrame.y - robot.blueFrame.y]
+    b = [robot.greenFrame.x - object.x, robot.greenFrame.y - object.y]
     angle = np.math.atan2(np.linalg.det([a, b]), np.dot(a, b))
     angle = np.degrees(angle)
     return int(angle)
