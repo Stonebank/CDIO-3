@@ -27,7 +27,7 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        self.remote = Remote()
+        #self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -89,6 +89,8 @@ class Main:
                 if self.balls:
                     if len(self.balls) == 5 and orangeBall is not None:
                         self.closestBall = orangeBall
+                        closestDistance = getDistance(
+                            self.robot.blueFrame.x, self.robot.blueFrame.y, self.closestBall.x, self.closestBall.y)
                     else:
                         self.closestBall = self.balls[0]
                         closestDistance = getDistance(
@@ -122,12 +124,15 @@ class Main:
         self.showClosestBall = True
         self.showGoal = False
         count = 0
+        scoring_count = 0
         while (self.closestBall is not None):
+            print(len(self.balls))
             if (count % 3 == 0):
                 self.remote.tank.gyro.calibrate()
-
-            if(len(self.balls) == 5):
+            if(len(self.balls) == 4 and scoring_count == 0):
                 self.score()
+                scoring_count += 1
+                continue
             ball = self.closestBall
             print("Consuming closest ball")
             # Check for cross intercept
@@ -153,7 +158,7 @@ class Main:
 
             if ball.y > yUpper:
                 offsetY = ball.y - 100
-                ball = Ball(ball.x, ball.y+15)
+                ball = Ball(ball.x, ball.y+25)
                 print("ball lower side")
 
             if ball.x > xUpper:
@@ -204,7 +209,7 @@ class Main:
                 self.driveToObject(offset, False, 20)
                
             self.remote.consume_balls()
-
+            
             self.driveToObject(ball, False, 20 if ballInsideCross else 50)
             # self.rotateUntilZero(ball)
 
@@ -213,9 +218,12 @@ class Main:
 
             if offsetX != ball.x or offsetY != ball.y or ballInsideCross:
                 self.remote.go_forward_distance(-20, 80)
-
+            
             self.remote.stop_balls_mec()
             self.remote.stop_tank()
+
+            
+            
             count += 1
         self.score()
 
@@ -261,7 +269,7 @@ class Main:
                 elif (object.x > self.cross.x and object.y < self.cross.y):
                     offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                     self.driveToObject(offset, True)
-                    if (lineIntersectsCross(self.robot, object, self.cross)) :
+                    if (lineIntersectsCross(self.robot.greenFrame, object, self.cross)) :
                         offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                         self.driveToObject(offset, True)
                 # Ball lower right

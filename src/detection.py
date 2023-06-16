@@ -362,8 +362,8 @@ def lineIntersectsCross(robot, ball, cross):
                 return True
     return False
 
-def line_intersection(frame, ball, side1, side2):
-    x1, y1 = frame.x, frame.y
+def line_intersection(robot, ball, side1, side2):
+    x1, y1 = robot.x, robot.y
     x2, y2 = ball.x, ball.y
     x3, y3 = side1
     x4, y4 = side2
