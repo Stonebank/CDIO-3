@@ -27,7 +27,7 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        #self.remote = Remote()
+        self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
@@ -356,9 +356,9 @@ class Main:
             leftSpeed = speed
             rightSpeed = speed
             if (angle > 0):
-                rightSpeed = rightSpeed - (angle/1.8)
+                rightSpeed = rightSpeed - (angle/1.2)
             elif (angle < 0):
-                leftSpeed = leftSpeed - ((-angle)/1.8)
+                leftSpeed = leftSpeed - ((-angle)/1.2)
              
             self.remote.tank.on(leftSpeed, rightSpeed)
             distance = getDistance(
@@ -385,11 +385,11 @@ class Main:
         goal = self.ft.goal
 
         # Calculate offset
-        offset = 50
+        offset = 30
         if (goal.x > 300):
             offset = -50
 
-        goalOffset = Goal(goal.x + offset, goal.y)
+        goalOffset = Goal(goal.x + offset, goal.y+5)
 
         self.goAroundCross(goalOffset)
 
