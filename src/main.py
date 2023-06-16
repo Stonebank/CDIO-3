@@ -21,6 +21,8 @@ class Main:
     showGoal = False
     showClosestBall = True
 
+    balls = None
+
     previousFrames = []
 
     def __init__(self):
@@ -35,7 +37,9 @@ class Main:
             self.toggleManMode()))
         keyboard.add_hotkey('q', lambda: (
             self.remote.stop_tank(),
+            time.sleep(0.5),
             self.remote.stop_balls_mec(),
+            time.sleep(0.5),
             cap.release(),
             cv2.destroyAllWindows(), sys.exit()))
 
@@ -63,9 +67,9 @@ class Main:
             robot = detectRobot(transformed)
             # if (robot is not None and robot.greenFrame is not None and robot.blueFrame is not None):
             self.robot = robot
-            # orangeBall = detectOrangeBall(transformed, robot)
+            orangeBall = detectOrangeBall(transformed, robot)
             
-            balls = detectBalls(self.previousFrames, self.robot)
+            self.balls = detectBalls(self.previousFrames, self.robot)
 
             cross = detectCross(transformed)
             if (cross is not None):
@@ -82,19 +86,22 @@ class Main:
 
                 cv2.drawContours(transformed, [self.robot.greenFrame.box], 0, (0, 255, 0), 3)
                 cv2.drawContours(transformed, [self.robot.blueFrame.box], 0, (0, 255, 0), 3)
-                if balls:
-                    self.closestBall = balls[0]
-                    closestDistance = getDistance(
-                        self.robot.blueFrame.x, self.robot.blueFrame.y, self.closestBall.x, self.closestBall.y)
-                    for ball in balls:
-                        distance = getDistance(
-                            self.robot.blueFrame.x, self.robot.blueFrame.y, ball.x, ball.y)
-                        if distance < closestDistance:
-                            self.closestBall = ball
-                            closestDistance = distance
+                if self.balls:
+                    if len(self.balls) == 5 and orangeBall is not None:
+                        self.closestBall = orangeBall
+                    else:
+                        self.closestBall = self.balls[0]
+                        closestDistance = getDistance(
+                            self.robot.blueFrame.x, self.robot.blueFrame.y, self.closestBall.x, self.closestBall.y)
+                        for ball in self.balls:
+                            distance = getDistance(
+                                self.robot.blueFrame.x, self.robot.blueFrame.y, ball.x, ball.y)
+                            if distance < closestDistance:
+                                self.closestBall = ball
+                                closestDistance = distance
                     if (self.showClosestBall):
                         drawLine(transformed, self.robot.blueFrame.x, self.robot.blueFrame.y,
-                                 self.closestBall.x, self.closestBall.y, robot=self.robot)
+                                 self.closestBall.x, self.closestBall.y, robot=self.robot) 
 
                 else:
                     self.closestBall = None
@@ -115,6 +122,8 @@ class Main:
         self.showClosestBall = True
         self.showGoal = False
         while (self.closestBall is not None):
+            if(len(self.balls) == 5):
+                self.score()
             ball = self.closestBall
             print("Consuming closest ball")
             # Check for cross intercept
@@ -135,7 +144,7 @@ class Main:
 
             if ball.x < xLower:
                 offsetX = ball.x + 100
-                ball = Ball(ball.x-10, ball.y-5)
+                ball = Ball(ball.x-15, ball.y-5)
                 print("ball left side")
 
             if ball.y > yUpper:
@@ -155,6 +164,7 @@ class Main:
                         print("Upper left")
                         offsetX = ball.x + 60
                         offsetY = ball.y + 200
+                        ball = Ball(ball.x-5, ball.y)
                     # Lower left corner
                     elif ball.y > yUpper and ball.x < xLower:
                         print("Lower left")

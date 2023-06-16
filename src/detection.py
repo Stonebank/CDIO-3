@@ -5,8 +5,8 @@ import cvzone
 import numpy as np
 
 from ball import Ball
-from frame import Frame
 from cross import Cross
+from frame import Frame
 from robot import Robot
 
 
@@ -51,9 +51,9 @@ def detectOrangeBall(frame, robot):
 
 def detectBalls(previousFrames, robot):
 
-    
-    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195,
-                  'hmax': 179, 'smax': 113, 'vmax': 255}
+    #hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195,
+     #             'hmax': 179, 'smax': 113, 'vmax': 255}
+    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 198, 'hmax': 179, 'smax': 52, 'vmax': 255}
 
     hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
     hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
@@ -362,8 +362,8 @@ def lineIntersectsCross(robot, ball, cross):
                 return True
     return False
 
-def line_intersection(robot, ball, side1, side2):
-    x1, y1 = robot.x, robot.y
+def line_intersection(frame, ball, side1, side2):
+    x1, y1 = frame.x, frame.y
     x2, y2 = ball.x, ball.y
     x3, y3 = side1
     x4, y4 = side2
