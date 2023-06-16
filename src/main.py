@@ -25,9 +25,9 @@ class Main:
 
     def __init__(self):
         # Connect to robot
-        # self.remote = Remote()
+        self.remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
         
@@ -100,7 +100,7 @@ class Main:
                     self.closestBall = None
                 
                 if (self.showGoal):
-                    drawLine(transformed, self.robot.x, self.robot.y,
+                    drawLine(transformed, self.robot.greenFrame.x, self.robot.greenFrame.y,
                              self.ft.goal.x, self.ft.goal.y, robot=self.robot)
            
             cv2.imshow("Transformed", transformed)
@@ -169,8 +169,8 @@ class Main:
                     # Lower right corner
                     elif ball.y > yUpper and ball.x > xUpper:
                         print("Lower right")
-                        offsetY = ball.y - 20
-                        offsetX = ball.x - 200
+                        #offsetY = ball.y - 20
+                        #offsetX = ball.x - 200
                         ball = Ball(ball.x+2, ball.y-5)
                 offset = Ball(offsetX, offsetY)
                 self.driveToObject(offset, True)
@@ -234,7 +234,7 @@ class Main:
                 print("robot upper left")
             
             # Robot lower left corner
-            elif (self.robot.x < self.cross.x and self.robot.y > self.cross.y):
+            elif (self.robot.greenFrame.x < self.cross.x and self.robot.greenFrame.y > self.cross.y):
                 offset = Goal((self.cross.x/2), self.cross.y +((500-self.cross.y)/2))
                 self.driveToObject(offset, True)
                 
@@ -256,7 +256,7 @@ class Main:
 
                 print("robot lower left")
             # Robot upper right corner
-            elif (self.robot.x > self.cross.x and self.robot.y < self.cross.y):
+            elif (self.robot.greenFrame.x > self.cross.x and self.robot.greenFrame.y < self.cross.y):
                 offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y/2)
                 self.driveToObject(offset, True)
 
@@ -278,7 +278,7 @@ class Main:
 
                 print("robot upper right")
             # Robot lower right corner
-            elif (self.robot.x > self.cross.x and self.robot.y > self.cross.y):
+            elif (self.robot.greenFrame.x > self.cross.x and self.robot.greenFrame.y > self.cross.y):
                 offset = Goal(self.cross.x+((750-self.cross.x)/2), self.cross.y+((500-self.cross.y)/2))
                 self.driveToObject(offset, True)
 
