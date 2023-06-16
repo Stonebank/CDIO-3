@@ -121,7 +121,11 @@ class Main:
     def consumeClosestBall(self):
         self.showClosestBall = True
         self.showGoal = False
+        count = 0
         while (self.closestBall is not None):
+            if (count % 3 == 0):
+                self.remote.tank.gyro.calibrate()
+
             if(len(self.balls) == 5):
                 self.score()
             ball = self.closestBall
@@ -212,6 +216,7 @@ class Main:
 
             self.remote.stop_balls_mec()
             self.remote.stop_tank()
+            count += 1
         self.score()
 
     
