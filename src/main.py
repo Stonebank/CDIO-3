@@ -5,12 +5,16 @@ import time
 import cv2
 import keyboard
 import numpy as np
+import detection
+import cvzone
 
 from ball import Ball
 from detection import *
 from frameProvider import FrameTransformer
 from goalClass import Goal
 from remoteControl import Remote
+
+from cvzone import ColorFinder
 
 
 class Main:
@@ -25,16 +29,27 @@ class Main:
 
     previousFrames = []
 
+    isCalibratingColors = False
+    calibrateCount = 0
+
     def __init__(self):
+        self.initTrackbar()
         # Connect to robot
-        self.remote = Remote()
+        # self.remote = Remote()
         # Set video input
-        cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
         
         keyboard.add_hotkey('m', lambda: (
             self.toggleManMode()))
+        
+        keyboard.add_hotkey('enter', lambda: (
+            self.calibrateNext()))
+        
+        keyboard.add_hotkey('c', lambda: (
+            self.toggleCalibrationMode()))
+        
         keyboard.add_hotkey('q', lambda: (
             self.remote.stop_tank(),
             time.sleep(0.5),
@@ -58,6 +73,22 @@ class Main:
             ret, frame = cap.read()
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
+            if (self.isCalibratingColors) :
+                
+                hsv = cv2.cvtColor(transformed, cv2.COLOR_BGR2HSV)
+
+                hsvObject = self.getTrackBarValues()
+                
+                hMin, sMin, vMin = hsvObject['hmin'], hsvObject['smin'], hsvObject['vmin']
+                hMax, sMax, vMax = hsvObject['hmax'], hsvObject['smax'], hsvObject['vmax']
+
+                lower_range = np.array([hMin, sMin, vMin], dtype=np.uint8)
+                upper_range = np.array([hMax, sMax, vMax], dtype=np.uint8)
+                
+                mask = cv2.inRange(hsv, lower_range, upper_range)
+                result = cv2.bitwise_and(transformed, transformed, mask=mask)       
+                cv2.imshow("Calibrate", result)
+                
             if (len(self.previousFrames) < 10) :
                 self.previousFrames.append(transformed)
             else : 
@@ -412,6 +443,88 @@ class Main:
             self.ft.manMode = False
             self.ft.selectCount = 0
             print("AUTO MODE")
+    
+    def toggleCalibrationMode(self) :
+        if (self.isCalibratingColors) :
+            self.isCalibratingColors = False
+            cv2.destroyWindow("Calibrate")
+            # cv2.destroyWindow("TrackBars")
+            print("Calibration closed")
+        else :
+            print("CALIBRATE MODE")
+            self.calibrateCount = 0 
+            self.calibrateNext()
+            self.isCalibratingColors = True
 
+    def initTrackbar(self) :
+        cv2.namedWindow("TrackBars")
+        cv2.resizeWindow("TrackBars", 640, 240)
+        cv2.createTrackbar("Hue Min", "TrackBars", 0, 179, self.empty)
+        cv2.createTrackbar("Hue Max", "TrackBars", 179, 179, self.empty)
+        cv2.createTrackbar("Sat Min", "TrackBars", 0, 255, self.empty)
+        cv2.createTrackbar("Sat Max", "TrackBars", 255, 255, self.empty)
+        cv2.createTrackbar("Val Min", "TrackBars", 0, 255, self.empty)
+        cv2.createTrackbar("Val Max", "TrackBars", 255, 255, self.empty)        
+        
+
+    def getTrackBarValues(self) : 
+        hmin = cv2.getTrackbarPos("Hue Min", "TrackBars")
+        smin = cv2.getTrackbarPos("Sat Min", "TrackBars")
+        vmin = cv2.getTrackbarPos("Val Min", "TrackBars")
+        hmax = cv2.getTrackbarPos("Hue Max", "TrackBars")
+        smax = cv2.getTrackbarPos("Sat Max", "TrackBars")
+        vmax = cv2.getTrackbarPos("Val Max", "TrackBars")
+
+        hsvVals = {"hmin": hmin, "smin": smin, "vmin": vmin,
+                   "hmax": hmax, "smax": smax, "vmax": vmax}
+        return hsvVals
+    
+    def setTrackbarValues(self, hsv) :
+        hMin, sMin, vMin = hsv['hmin'], hsv['smin'], hsv['vmin']
+        hMax, sMax, vMax = hsv['hmax'], hsv['smax'], hsv['vmax']
+        cv2.setTrackbarPos('Hue Min', 'TrackBars', hMin)
+        cv2.setTrackbarPos('Hue Max', 'TrackBars', hMax)
+        cv2.setTrackbarPos('Sat Min', 'TrackBars', sMin)
+        cv2.setTrackbarPos('Sat Max', 'TrackBars', sMax)
+        cv2.setTrackbarPos('Val Min', 'TrackBars', vMin)
+        cv2.setTrackbarPos('Val Max', 'TrackBars', vMax)
+    
+    def empty(self, a):
+        pass
+
+    def calibrateNext(self) :
+        
+        trackBarVals = self.getTrackBarValues()
+        self.calibrateCount+=1
+        
+
+        if (self.calibrateCount == 1) :
+            self.setTrackbarValues(detection.hsvWhiteBall)
+            print("Select white balls - press enter when done")
+            
+        elif (self.calibrateCount == 2) :
+            detection.hsvWhiteBall = trackBarVals
+            self.setTrackbarValues(detection.hsvOrangeBall)
+            print("Select orange balls - press enter when done")
+            
+        elif (self.calibrateCount == 3) :
+            detection.hsvOrangeBall = trackBarVals
+            self.setTrackbarValues(detection.hsvGreen)
+            print("Select green - press enter when done")
+            
+        elif (self.calibrateCount == 4) :
+            detection.hsvGreen = trackBarVals
+            self.setTrackbarValues(detection.hsvBlue)
+            print("Select blue - press enter when done")
+            
+        elif (self.calibrateCount == 5) :
+            detection.hsvBlue = trackBarVals
+            self.setTrackbarValues(detection.hsvCross)
+            print("Select cross - press enter when done")
+            
+        elif (self.calibrateCount == 6) :
+            detection.hsvCross = trackBarVals
+            self.toggleCalibrationMode()          
+            
 
 Main()

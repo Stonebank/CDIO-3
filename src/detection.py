@@ -9,23 +9,30 @@ from cross import Cross
 from frame import Frame
 from robot import Robot
 
+hsvWhiteBall = {'hmin': 0, 'smin': 0, 'vmin': 198, 'hmax': 179, 'smax': 52, 'vmax': 255}
+hsvOrangeBall = {'hmin': 11, 'smin': 56, 'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
+hsvCross = {'hmin': 150, 'smin': 0, 'vmin': 0, 'hmax': 179, 'smax': 255, 'vmax': 255}
+hsvGreen = {'hmin': 52, 'smin': 18, 'vmin': 0, 'hmax': 98, 'smax': 255, 'vmax': 255}
+hsvBlue = {'hmin': 98, 'smin': 61, 'vmin': 0, 'hmax': 159, 'smax': 255, 'vmax': 255}
+
+rectanglesCross = []
+
 
 def detectOrangeBall(frame, robot):
 
     # hsv values updated to be more accurate
 
-    orange_ball_hsv_values = {'hmin': 11, 'smin': 56,
-                              'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
+    global hsvOrangeBall
 
-    hmin, smin, vmin = orange_ball_hsv_values['hmin'], orange_ball_hsv_values['smin'], orange_ball_hsv_values['vmin']
-    hmax, smax, vmax = orange_ball_hsv_values['hmax'], orange_ball_hsv_values['smax'], orange_ball_hsv_values['vmax']
+    hmin, smin, vmin = hsvOrangeBall['hmin'], hsvOrangeBall['smin'], hsvOrangeBall['vmin']
+    hmax, smax, vmax = hsvOrangeBall['hmax'], hsvOrangeBall['smax'], hsvOrangeBall['vmax']
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     cv2.GaussianBlur(hsv, (5, 5), 0)
 
-    lower_range = np.array([hmin, smin, vmin])
-    upper_range = np.array([hmax, smax, vmax])
+    lower_range = np.array([hmin, smin, vmin], dtype=np.uint8)
+    upper_range = np.array([hmax, smax, vmax], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_range, upper_range)
 
@@ -51,12 +58,10 @@ def detectOrangeBall(frame, robot):
 
 def detectBalls(previousFrames, robot):
 
-    #hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 195,
-     #             'hmax': 179, 'smax': 113, 'vmax': 255}
-    hsv_values = {'hmin': 0, 'smin': 0, 'vmin': 198, 'hmax': 179, 'smax': 52, 'vmax': 255}
+    global hsvWhiteBall
 
-    hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
-    hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
+    hmin, smin, vmin = hsvWhiteBall['hmin'], hsvWhiteBall['smin'], hsvWhiteBall['vmin']
+    hmax, smax, vmax = hsvWhiteBall['hmax'], hsvWhiteBall['smax'], hsvWhiteBall['vmax']
 
     filteredBalls = []
 
@@ -67,8 +72,8 @@ def detectBalls(previousFrames, robot):
 
         cv2.GaussianBlur(hsv, (5, 5), 0)
 
-        lower_range = np.array([hmin, smin, vmin])
-        upper_range = np.array([hmax, smax, vmax])
+        lower_range = np.array([hmin, smin, vmin], dtype=np.uint8)
+        upper_range = np.array([hmax, smax, vmax], dtype=np.uint8)
 
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.inRange(hsv, lower_range, upper_range)
@@ -104,16 +109,15 @@ def detectBalls(previousFrames, robot):
 
 def detectRobot(frame):
 
-    hsv_values = {'hmin': 52, 'smin': 18, 'vmin': 0,
-                  'hmax': 98, 'smax': 255, 'vmax': 255}
+    global hsvGreen
 
-    hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
-    hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
+    hmin, smin, vmin = hsvGreen['hmin'], hsvGreen['smin'], hsvGreen['vmin']
+    hmax, smax, vmax = hsvGreen['hmax'], hsvGreen['smax'], hsvGreen['vmax']
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_range = np.array([hmin, smin, vmin])
-    upper_range = np.array([hmax, smax, vmax])
+    lower_range = np.array([hmin, smin, vmin], dtype=np.uint8)
+    upper_range = np.array([hmax, smax, vmax], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_range, upper_range)
 
@@ -206,16 +210,15 @@ def is_point_inside_rectangle(point, rectangle):
 
 def detectBlueFrame(frame):
 
-    hsv_values = {'hmin': 98, 'smin': 61, 'vmin': 0, 'hmax': 159, 'smax': 255, 'vmax': 255}
-    #hsv_values = {'hmin': 92, 'smin': 45, 'vmin': 32, 'hmax': 118, 'smax': 255, 'vmax': 255}
+    global hsvBlue
     
-    hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
-    hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
+    hmin, smin, vmin = hsvBlue['hmin'], hsvBlue['smin'], hsvBlue['vmin']
+    hmax, smax, vmax = hsvBlue['hmax'], hsvBlue['smax'], hsvBlue['vmax']
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_range = np.array([hmin, smin, vmin])
-    upper_range = np.array([hmax, smax, vmax])
+    lower_range = np.array([hmin, smin, vmin], dtype=np.uint8)
+    upper_range = np.array([hmax, smax, vmax], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_range, upper_range)
 
@@ -285,25 +288,33 @@ def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
         return False
 
 def detectCross(frame) :
-    hsv_values = {'hmin': 135, 'smin': 154, 'vmin': 0, 'hmax': 179, 'smax': 255, 'vmax': 255}
     
-    hmin, smin, vmin = hsv_values['hmin'], hsv_values['smin'], hsv_values['vmin']
-    hmax, smax, vmax = hsv_values['hmax'], hsv_values['smax'], hsv_values['vmax']
+    global hsvCross
+
+    hmin, smin, vmin = hsvCross['hmin'], hsvCross['smin'], hsvCross['vmin']
+    hmax, smax, vmax = hsvCross['hmax'], hsvCross['smax'], hsvCross['vmax']
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_range = np.array([hmin, smin, vmin])
-    upper_range = np.array([hmax, smax, vmax])
+    lower_range = np.array([hmin, smin, vmin], dtype=np.uint8)
+    upper_range = np.array([hmax, smax, vmax], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_range, upper_range)
-
+    
     contours, _ = cv2.findContours(
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         rect = cv2.minAreaRect(largest_contour)
-        box = cv2.boxPoints(rect)
+        global rectanglesCross
+        rectanglesCross.append(rect)
+        if (len(rectanglesCross) > 10) :
+            rectanglesCross.pop(0)
+        
+        average_rect = getAverageRect()
+        
+        box = cv2.boxPoints(average_rect)
         box = np.int0(box)
 
         center = np.mean(box, axis=0)
@@ -312,7 +323,7 @@ def detectCross(frame) :
         
         # Drawing cross lines
         line_length = 120  # Adjust this value to change the length of the lines
-        angle = rect[2]  # Angle of rotation
+        angle = average_rect[2]  # Angle of rotation
         rad_angle = math.radians(angle)  # Convert angle to radians
         cos_val = math.cos(rad_angle)  # Cosine of angle
         sin_val = math.sin(rad_angle)  # Sine of angle
@@ -342,7 +353,24 @@ def detectCross(frame) :
             cv2.circle(center=offset, thickness=10, radius=0, img=frame, color=(0, 0, 255))
         # if (rect_h > 148 and rect_h < 175 and rect_w > 148 and rect_w < 175) :
         return Cross(center[0], center[1], rect_h, rect_w, offsets)
+
+def getAverageRect() : 
+    sumA1 = 0
+    sumA2 = 0
+    sumB1 = 0
+    sumB2 = 0
+    sumC = 0
+    global rectanglesCross
+    for rect in rectanglesCross :
+        sumA1 += rect[0][0]
+        sumA2 += rect[0][1]
+        sumB1 += rect[1][0]
+        sumB2 += rect[1][1]
+        sumC += rect[2]
     
+    return ((sumA1/len(rectanglesCross), sumA2/len(rectanglesCross)), (sumB1/len(rectanglesCross), sumB2/len(rectanglesCross)), sumC/len(rectanglesCross))
+
+
 def lineIntersectsCross(robot, ball, cross):
     half_w = cross.width / 2
     half_h = cross.height / 2
