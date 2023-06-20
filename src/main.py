@@ -3,18 +3,17 @@ import sys
 import time
 
 import cv2
+import cvzone
 import keyboard
 import numpy as np
-import detection
-import cvzone
+from cvzone import ColorFinder
 
+import detection
 from ball import Ball
 from detection import *
 from frameProvider import FrameTransformer
 from goalClass import Goal
 from remoteControl import Remote
-
-from cvzone import ColorFinder
 
 
 class Main:
@@ -416,11 +415,20 @@ class Main:
         goal = self.ft.goal
 
         # Calculate offset
-        offset = 30
+        firstOffset = 100
         if (goal.x > 300):
-            offset = -50
+            secondOffset = -100
+        firstPos = Goal(goal.x + firstOffset, goal.y)
+        self.goAroundCross(firstPos)
 
-        goalOffset = Goal(goal.x + offset, goal.y+5)
+        self.driveToObject(firstPos, False)
+
+        # Calculate offset
+        secondOffset = 30
+        if (goal.x > 300):
+            secondOffset = -50
+
+        goalOffset = Goal(goal.x + secondOffset, goal.y+5)
 
         self.goAroundCross(goalOffset)
 
