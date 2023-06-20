@@ -417,7 +417,7 @@ class Main:
         # Calculate offset
         firstOffset = 100
         if (goal.x > 300):
-            secondOffset = -100
+            firstOffset = -100
         firstPos = Goal(goal.x + firstOffset, goal.y)
         self.goAroundCross(firstPos)
 
