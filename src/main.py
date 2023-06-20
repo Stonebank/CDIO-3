@@ -422,6 +422,7 @@ class Main:
         self.goAroundCross(firstPos)
 
         self.driveToObject(firstPos, False)
+        self.rotateUntilZero(goal)
 
         # Calculate offset
         secondOffset = 30
