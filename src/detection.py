@@ -89,14 +89,14 @@ def detectBalls(previousFrames, robot):
                 if area > 100:
                     (x, y, w, h) = cv2.boundingRect(contour)
                     radius = int(w / 2)
-                    if radius > 9 or radius < 7:
-                        continue
-                    # if robot is not None and is_point_inside_rectangle((x,y), robot.box)==True:
-                    #     continue
-                    cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
-                            int(max(w, h) / 2), (0, 255, 0), 2)
-                    balls.append(Ball(x + radius / 2, y +
-                                radius / 2))
+                    if (radius < 11 and radius > 5) or (radius > 13 and radius < 19):
+                        # if robot is not None and is_point_inside_rectangle((x,y), robot.box)==True:
+                        #     continue
+                        cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
+                                int(max(w, h) / 2), (0, 255, 0), 2)
+                        balls.append(Ball(x + radius / 2, y +
+                                    radius / 2))
+                    
         if (len(balls) > 0) :
             for ball in filteredBalls :
                 if ball not in balls :
