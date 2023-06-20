@@ -16,6 +16,7 @@ class Remote:
         # import ev3dev2 on the remote ev3dev
         self.ev3dev2_motor = conn.modules['ev3dev2.motor']
         self.ev3dev2_sensor = conn.modules['ev3dev2.sensor.lego']
+        self.ev3dev2_sound = conn.modules['ev3dev2.sound']
 
         self.motor_right = self.ev3dev2_motor.MediumMotor(
             self.ev3dev2_motor.OUTPUT_C)
@@ -77,6 +78,9 @@ class Remote:
             target_angle=degrees,
             error_margin=3,
         )
+    def tank_victory(self):
+        self.ev3dev2_sound.Sound.speak("Victoryyy!")
+        self.tank.on_for_rotations(50, -50, 10)
             
 
     def stop_tank(self):
