@@ -159,7 +159,17 @@ class Main:
             print(len(self.balls))
             if (count % 3 == 0):
                 self.remote.tank.gyro.calibrate()
-            if(len(self.balls) == 4 and scoring_count == 0):
+            if(len(self.balls) == 5 and scoring_count == 0):
+                ball = self.closestBall
+                while(self.orangeBall is not None):
+                    print("Consuming orange ball")
+                    # Check for cross intercept
+                    self.goAroundCross(ball)
+                    self.driveToObject(ball, True)
+                    self.remote.consume_balls()
+                    self.remote.stop_balls_mec()
+                    self.remote.stop_tank()
+
                 self.score()
                 scoring_count += 1
                 continue
@@ -415,9 +425,9 @@ class Main:
         goal = self.ft.goal
 
         # Calculate offset
-        firstOffset = 100
+        firstOffset = 150
         if (goal.x > 300):
-            firstOffset = -100
+            firstOffset = -150
         firstPos = Goal(goal.x + firstOffset, goal.y)
         self.goAroundCross(firstPos)
 
