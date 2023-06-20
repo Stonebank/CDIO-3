@@ -245,7 +245,7 @@ class Main:
                     if offsetDist < closestOffsetDist :
                         closestOffset = offset
                         closestOffsetDist = offsetDist
-                offset = Ball(closestOffset[0], closestOffset[1]) 
+                offset = Ball(closestOffset[0], closestOffset[1])
                 self.driveToObject(offset, False, 20)
                
             self.remote.consume_balls()
@@ -428,7 +428,7 @@ class Main:
         firstOffset = 150
         if (goal.x > 300):
             firstOffset = -150
-        firstPos = Goal(goal.x + firstOffset, goal.y)
+        firstPos = Goal(goal.x + firstOffset, goal.y+20)
         self.goAroundCross(firstPos)
 
         self.driveToObject(firstPos, False)
