@@ -3,7 +3,8 @@ import math
 
 import rpyc
 
-
+# Class for connecting and communicating with the robot
+# Source: LEGO, https://pybricks.com/ev3-micropython
 class Remote:
     
     def __init__(self):

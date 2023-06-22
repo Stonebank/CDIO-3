@@ -79,11 +79,16 @@ class Main:
         # Hotkey for scoring
         keyboard.add_hotkey('g', lambda: (self.score()))
 
+        # Looping through the frames
         while True:
             frameCount += 1
             ret, frame = cap.read()
+
+            # Transform the image perspective
             transformed = self.ft.transform(frame, frameCount)
             transformed = frame if transformed is None else transformed
+
+            # Helper window for calibrating hsv color values
             if (self.isCalibratingColors) :
                 
                 hsv = cv2.cvtColor(transformed, cv2.COLOR_BGR2HSV)
@@ -120,15 +125,10 @@ class Main:
                 drawCross(transformed, self.cross)
             if self.robot is not None:
                 
-                # robotBox = self.robot.box
-                # # Draw a line on the image
-                # cv2.line(transformed, tuple(robotBox[0]), tuple(robotBox[1]), (0, 255, 0), 3)
-                # cv2.line(transformed, tuple(robotBox[0]), tuple(robotBox[2]), (0, 255, 0), 3)
-                # cv2.line(transformed, tuple(robotBox[1]), tuple(robotBox[3]), (0, 255, 0), 3)
-                # cv2.line(transformed, tuple(robotBox[2]), tuple(robotBox[3]), (0, 255, 0), 3)
-
                 cv2.drawContours(transformed, [self.robot.greenFrame.box], 0, (0, 255, 0), 3)
                 cv2.drawContours(transformed, [self.robot.blueFrame.box], 0, (0, 255, 0), 3)
+                
+                # Find the closest ball
                 if self.balls:
                     if len(self.balls) < 6 and self.orangeBall is not None:
                         self.closestBall = self.orangeBall
@@ -154,11 +154,13 @@ class Main:
                     drawLine(transformed, self.robot.greenFrame.x, self.robot.greenFrame.y,
                              self.ft.goal.x, self.ft.goal.y, robot=self.robot)
            
+            # Show the different windows
             cv2.imshow("Transformed", transformed)
             cv2.imshow("Board", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         
+        # When closing application. Stop everything.
         self.remote.stop_tank()
         time.sleep(0.5)
         self.remote.stop_balls_mec()
@@ -167,6 +169,7 @@ class Main:
         cv2.destroyAllWindows() 
         sys.exit()
 
+    # Logic for consuming the balls
     def consumeClosestBall(self):
         self.showClosestBall = True
         self.showGoal = False
@@ -179,6 +182,7 @@ class Main:
                 self.remote.tank.gyro.calibrate()
                 
             print("Consuming closest ball")
+            
             # Check for cross intercept
             self.goAroundCross(ball)
 
@@ -249,6 +253,7 @@ class Main:
 
             ballInsideCross = ball.x > self.cross.x-(self.cross.rect_w/2) and ball.x < self.cross.x+(
                 self.cross.rect_w/2) and ball.y > self.cross.y-(self.cross.rect_h/2) and ball.y < self.cross.y+(self.cross.rect_h/2)
+            
             # If ball inside cross
             if (ballInsideCross):
                 closestOffset = self.cross.offsets[0]
@@ -276,20 +281,7 @@ class Main:
                 else :
                     self.rotateUntilZero(ball)
                 
-                # if (ball.x > xUpper and ball.y > yUpper) :
-                #     d = d-2
-                # elif (ball.x > xUpper and ball.y < yLower) :
-                #     d = d-2
-                # elif(ball.x < xLower and ball.y < yLower):
-                #     d = d-1
-                # elif(ball.x < xLower and ball.y > yUpper):
-                #     d = d-1
-
-                # elif (ball.y < yLower) :
-                #     d = d+1
-                # elif(ball.y > yUpper) :
-                #     d = d-1
-               
+                
                 self.remote.go_forward_distance(d, 20)
                 speed = 20
             else :
@@ -318,10 +310,9 @@ class Main:
             self.consumeClosestBall()
         self.remote.tank_victory()
 
-    
+    # Function for going around the cross
     def goAroundCross(self, object):
         if (self.cross is not None and lineIntersectsCross(self.robot.greenFrame, object, self.cross)):
-            # while (lineIntersectsCross(self.robot, object, self.cross)):
             print("Cross intercept")
             # Make path around cross
             # Robot upper left corner
@@ -414,6 +405,7 @@ class Main:
 
                 print("robot lower left")
 
+    # Function for scoring
     def score(self):
         self.showGoal = True
         self.showClosestBall = False
@@ -530,6 +522,8 @@ class Main:
             self.calibrateNext()
             self.isCalibratingColors = True
 
+    # Setting window with trackbars, for color calibration.
+    # Source: cvzone
     def initTrackbar(self) :
         cv2.namedWindow("TrackBars")
         cv2.resizeWindow("TrackBars", 640, 240)
@@ -540,7 +534,7 @@ class Main:
         cv2.createTrackbar("Val Min", "TrackBars", 0, 255, self.empty)
         cv2.createTrackbar("Val Max", "TrackBars", 255, 255, self.empty)        
         
-
+    # Source: cvzone
     def getTrackBarValues(self) : 
         hmin = cv2.getTrackbarPos("Hue Min", "TrackBars")
         smin = cv2.getTrackbarPos("Sat Min", "TrackBars")
@@ -553,6 +547,7 @@ class Main:
                    "hmax": hmax, "smax": smax, "vmax": vmax}
         return hsvVals
     
+    # Source: cvzone
     def setTrackbarValues(self, hsv) :
         hMin, sMin, vMin = hsv['hmin'], hsv['smin'], hsv['vmin']
         hMax, sMax, vMax = hsv['hmax'], hsv['smax'], hsv['vmax']
@@ -566,6 +561,7 @@ class Main:
     def empty(self, a):
         pass
 
+    # When hitting enter, calibrate colors of the next object
     def calibrateNext(self) :
         
         trackBarVals = self.getTrackBarValues()

@@ -1,6 +1,6 @@
 import math
 
-
+# Class for balls. Containing position of the ball
 class Ball:
 
     def __init__(self, x, y):

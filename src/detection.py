@@ -9,6 +9,13 @@ from cross import Cross
 from frame import Frame
 from robot import Robot
 
+
+# The purpose of this python file is to detect the different objects on the field
+# using hsv color codes.
+# Source: OpenCV (https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html)
+
+
+# Setting the hsv color values for the different objects on the field
 hsvWhiteBall = {'hmin': 0, 'smin': 0, 'vmin': 198, 'hmax': 179, 'smax': 52, 'vmax': 255}
 hsvOrangeBall = {'hmin': 11, 'smin': 56, 'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
 hsvCross = {'hmin': 0, 'smin': 174, 'vmin': 211, 'hmax': 179, 'smax': 255, 'vmax': 255}
@@ -19,8 +26,6 @@ rectanglesCross = []
 
 
 def detectOrangeBall(frame, robot):
-
-    # hsv values updated to be more accurate
 
     global hsvOrangeBall
 
@@ -267,7 +272,8 @@ def getAngle(robot, object):
     angle = np.degrees(angle)
     return int(angle)
 
-
+# Check if the line is crossing the circle around the cross
+# Source: https://mathworld.wolfram.com/Circle-LineIntersection.html
 def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
     distance = math.sqrt((point2[0] - point1[0]) **
                          2 + (point2[1] - point1[1])**2)
@@ -287,6 +293,7 @@ def is_line_crossing_circle(point1, point2, circle_center, circle_radius):
     else:
         return False
 
+# Source: OpenCV,  https://www.geeksforgeeks.org/drawing-a-cross-on-an-image-with-opencv/
 def detectCross(frame) :
     
     global hsvCross

@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 
 from goalClass import Goal
-
+# The purpose of this class is to transform the perspective of the image
+# Source: GeeksForGeeks (https://www.geeksforgeeks.org/perspective-transformation-python-opencv/)
 class FrameTransformer:
     manMode = False
     selectCount = 0
@@ -120,46 +121,3 @@ class FrameTransformer:
                         lower_right[0] = i
                         lower_right[1] = j
         return [upper_left, upper_right, lower_left, lower_right]
-
-    def getCross(self, frame):
-
-        # Define lower/upper color field for red
-        lower_red = np.array([0, 0, 200], dtype="uint8")
-        upper_red = np.array([100, 100, 255], dtype="uint8")
-
-        # Frame dimensions
-        height = frame.shape[0]
-        width = frame.shape[1]
-
-        redMask = cv2.inRange(frame, lower_red, upper_red)
-
-        # Filter out everything that is not red
-        wall = frame.copy()
-        wall[np.where(redMask == 0)] = 0
-        # wall = cv2.GaussianBlur(wall,(41,41) ,5)
-        # Convert to grey
-        wall = cv2.cvtColor(wall, cv2.COLOR_BGR2GRAY)
-
-        a = 0
-        cross = [0, 0]
-
-        # Find corners
-        # dest = cv2.cornerHarris(np.float32(wall), 20, 3, 0.2496)
-        dest = cv2.cornerHarris(np.float32(wall), 10, 3, 0.24)
-        dest = cv2.dilate(dest, None)
-        thresh = 0.1*dest.max()
-        for j in range(0, dest.shape[0]):
-            for i in range(0, dest.shape[1]):
-                if (dest[j, i] > thresh):
-                    if (i < 700 and i > 50 and j < 450 and j > 50) :
-
-                        #cv2.circle(frame, ( int (i), int (j)), int(0), (0, 255, 0), -1)
-                        a += 1
-                        cross[0] += i
-                        cross[1] += j
-
-        #print("a: cross[0]: cross[1]: " + str(a) + " " + str(cross[0]) + " " + str(cross[1]))
-        if a != 0 :
-            return [int (cross[0]/a), int (cross[1]/a)]
-        else :
-            return [0,0]

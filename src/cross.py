@@ -1,6 +1,6 @@
 import math
 
-
+# Class for the cross. Containing position, rectangle around cross, and offsets
 class Cross:
 
     def __init__(self, x, y, rect_h, rect_w, rect_x, rect_y, offsets):
