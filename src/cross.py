@@ -3,9 +3,11 @@ import math
 
 class Cross:
 
-    def __init__(self, x, y, height, width, offsets):
+    def __init__(self, x, y, rect_h, rect_w, rect_x, rect_y, offsets):
         self.x = x
         self.y = y
-        self.height = height
-        self.width = width
+        self.rect_h = rect_h
+        self.rect_w = rect_w
+        self.rect_x = rect_x
+        self.rect_y = rect_y
         self.offsets = offsets

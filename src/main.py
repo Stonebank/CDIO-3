@@ -15,7 +15,7 @@ from frameProvider import FrameTransformer
 from goalClass import Goal
 from remoteControl import Remote
 
-
+# This is the main class
 class Main:
     robot = None
     closestBall = None
@@ -31,24 +31,32 @@ class Main:
     isCalibratingColors = False
     calibrateCount = 0
 
+    deliverOrange = False
+
     def __init__(self):
+        # Opening trackbar window for color calibration
         self.initTrackbar()
         # Connect to robot
-        # self.remote = Remote()
+        self.remote = Remote()
         # Set video input
         cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.ft = FrameTransformer()
         frameCount = 0
         
+        # Setting hotkeys for the program
+        # Hotkey for setting the field corners manually/automatically 
         keyboard.add_hotkey('m', lambda: (
             self.toggleManMode()))
         
+        # Hotkey for calibrating color of next object
         keyboard.add_hotkey('enter', lambda: (
             self.calibrateNext()))
         
+        # Hotkey for calibrating color codes
         keyboard.add_hotkey('c', lambda: (
             self.toggleCalibrationMode()))
         
+        # Hotkey for closing application
         keyboard.add_hotkey('q', lambda: (
             self.remote.stop_tank(),
             time.sleep(0.5),
@@ -57,14 +65,18 @@ class Main:
             cap.release(),
             cv2.destroyAllWindows(), sys.exit()))
 
+        # Hotkey for moving backwards
         keyboard.add_hotkey('s', lambda: (
             self.remote.go_forward_distance(-50, 50)))
 
+        # Hotkey for ejecting balls
         keyboard.add_hotkey('e', lambda: (
             self.remote.eject_balls()))
 
+        # Hotkey for consuming the balls
         keyboard.add_hotkey("b", lambda: (self.consumeClosestBall()))
 
+        # Hotkey for scoring
         keyboard.add_hotkey('g', lambda: (self.score()))
 
         while True:
@@ -97,14 +109,15 @@ class Main:
             robot = detectRobot(transformed)
             # if (robot is not None and robot.greenFrame is not None and robot.blueFrame is not None):
             self.robot = robot
-            orangeBall = detectOrangeBall(transformed, robot)
+            self.orangeBall = detectOrangeBall(transformed, robot)
             
             self.balls = detectBalls(self.previousFrames, self.robot)
 
             cross = detectCross(transformed)
             if (cross is not None):
                 self.cross = cross
-
+            if (self.cross is not None) : 
+                drawCross(transformed, self.cross)
             if self.robot is not None:
                 
                 # robotBox = self.robot.box
@@ -117,10 +130,9 @@ class Main:
                 cv2.drawContours(transformed, [self.robot.greenFrame.box], 0, (0, 255, 0), 3)
                 cv2.drawContours(transformed, [self.robot.blueFrame.box], 0, (0, 255, 0), 3)
                 if self.balls:
-                    if len(self.balls) == 5 and orangeBall is not None:
-                        self.closestBall = orangeBall
-                        closestDistance = getDistance(
-                            self.robot.blueFrame.x, self.robot.blueFrame.y, self.closestBall.x, self.closestBall.y)
+                    if len(self.balls) < 6 and self.orangeBall is not None:
+                        self.closestBall = self.orangeBall
+                        self.deliverOrange = True
                     else:
                         self.closestBall = self.balls[0]
                         closestDistance = getDistance(
@@ -146,9 +158,14 @@ class Main:
             cv2.imshow("Board", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
-
+        
+        self.remote.stop_tank()
+        time.sleep(0.5)
+        self.remote.stop_balls_mec()
+        time.sleep(0.5)
         cap.release()
-        cv2.destroyAllWindows(),
+        cv2.destroyAllWindows() 
+        sys.exit()
 
     def consumeClosestBall(self):
         self.showClosestBall = True
@@ -156,24 +173,11 @@ class Main:
         count = 0
         scoring_count = 0
         while (self.closestBall is not None):
+            ball = self.closestBall
             print(len(self.balls))
             if (count % 3 == 0):
                 self.remote.tank.gyro.calibrate()
-            if(len(self.balls) == 5 and scoring_count == 0):
-                ball = self.closestBall
-                while(self.orangeBall is not None):
-                    print("Consuming orange ball")
-                    # Check for cross intercept
-                    self.goAroundCross(ball)
-                    self.driveToObject(ball, True)
-                    self.remote.consume_balls()
-                    self.remote.stop_balls_mec()
-                    self.remote.stop_tank()
-
-                self.score()
-                scoring_count += 1
-                continue
-            ball = self.closestBall
+                
             print("Consuming closest ball")
             # Check for cross intercept
             self.goAroundCross(ball)
@@ -181,61 +185,70 @@ class Main:
             offsetX = ball.x
             offsetY = ball.y
 
-            yUpper = 460
-            yLower = 40
-            xUpper = 710
-            xLower = 40
+            yUpper = 440
+            yLower = 60
+            xUpper = 690
+            xLower = 60
 
             if ball.y < yLower:
                 offsetY = ball.y + 100
-                ball = Ball(ball.x-10, ball.y-10)
+                # ball = Ball(ball.x-10, ball.y-10)
                 print("ball upper side")
 
             if ball.x < xLower:
                 offsetX = ball.x + 100
-                ball = Ball(ball.x-15, ball.y-5)
+                # ball = Ball(ball.x-15, ball.y-5)
                 print("ball left side")
 
             if ball.y > yUpper:
                 offsetY = ball.y - 100
-                ball = Ball(ball.x, ball.y+25)
+                # ball = Ball(ball.x, ball.y+25)
                 print("ball lower side")
 
             if ball.x > xUpper:
                 offsetX = ball.x - 100
-                ball = Ball(ball.x+30, ball.y)
+                # ball = Ball(ball.x+30, ball.y)
                 print("ball right side")
 
             if offsetX != ball.x or offsetY != ball.y:
                 if offsetX != ball.x and offsetY != ball.y:
+                    if (ball.x > xUpper) :
+                        temp_ball = Ball(self.cross.x+(750-self.cross.x)/2, 250)
+                        self.goAroundCross(temp_ball)
+                        self.driveToObject(temp_ball, True)
+                    elif (ball.x < xLower) : 
+                        temp_ball = Ball(self.cross.x/2, 250)
+                        self.goAroundCross(temp_ball)
+                        self.driveToObject(temp_ball, True)
                     # Upper left corner
                     if ball.y < yLower and ball.x < xLower:
                         print("Upper left")
-                        offsetX = ball.x + 60
+                        offsetX = ball.x + 70
                         offsetY = ball.y + 200
-                        ball = Ball(ball.x-5, ball.y)
+                        ball = Ball(ball.x+5, ball.y)
                     # Lower left corner
                     elif ball.y > yUpper and ball.x < xLower:
                         print("Lower left")
-                        offsetX = ball.x + 60
+                        offsetX = ball.x + 70
                         offsetY = ball.y - 200
-                        # ball = Ball(ball.x, ball.y, 7, 10)
+                        ball = Ball(ball.x+5, ball.y)
                     # Upper right corner
                     elif ball.y < yLower and ball.x > xUpper:
                         print("Upper right")
-                        offsetX = ball.x - 100
-                        offsetY = ball.y + 200
+                        offsetX = ball.x - 200
+                        offsetY = ball.y + 60
+                        ball = Ball(ball.x, ball.y+10)
                     # Lower right corner
                     elif ball.y > yUpper and ball.x > xUpper:
                         print("Lower right")
-                        #offsetY = ball.y - 20
-                        #offsetX = ball.x - 200
-                        ball = Ball(ball.x+2, ball.y-5)
+                        offsetY = ball.y - 100
+                        offsetX = ball.x - 200
+                        ball = Ball(ball.x, ball.y-5)
                 offset = Ball(offsetX, offsetY)
-                self.driveToObject(offset, True)
+                self.driveToObject(offset, True, 30)
 
-            ballInsideCross = ball.x > self.cross.x-(self.cross.width/2) and ball.x < self.cross.x+(
-                self.cross.width/2) and ball.y > self.cross.y-(self.cross.height/2) and ball.y < self.cross.y+(self.cross.height/2)
+            ballInsideCross = ball.x > self.cross.x-(self.cross.rect_w/2) and ball.x < self.cross.x+(
+                self.cross.rect_w/2) and ball.y > self.cross.y-(self.cross.rect_h/2) and ball.y < self.cross.y+(self.cross.rect_h/2)
             # If ball inside cross
             if (ballInsideCross):
                 closestOffset = self.cross.offsets[0]
@@ -245,12 +258,42 @@ class Main:
                     if offsetDist < closestOffsetDist :
                         closestOffset = offset
                         closestOffsetDist = offsetDist
-                offset = Ball(closestOffset[0], closestOffset[1])
+                offset = Ball(closestOffset[0], closestOffset[1]) 
+                
                 self.driveToObject(offset, False, 20)
                
             self.remote.consume_balls()
+            speed = 50
             
-            self.driveToObject(ball, False, 20 if ballInsideCross else 50)
+            if offsetX != ball.x or offsetY != ball.y or ballInsideCross :
+                print("going slow") 
+                a = getAngle(self.robot, ball)
+                d = getDistance(self.robot.blueFrame.x, self.robot.blueFrame.y, ball.x, ball.y)
+                if (ballInsideCross) :
+                    a = a+4
+                    d = d-5
+                    self.remote.tank_turn_degrees(a, 3)
+                else :
+                    self.rotateUntilZero(ball)
+                
+                # if (ball.x > xUpper and ball.y > yUpper) :
+                #     d = d-2
+                # elif (ball.x > xUpper and ball.y < yLower) :
+                #     d = d-2
+                # elif(ball.x < xLower and ball.y < yLower):
+                #     d = d-1
+                # elif(ball.x < xLower and ball.y > yUpper):
+                #     d = d-1
+
+                # elif (ball.y < yLower) :
+                #     d = d+1
+                # elif(ball.y > yUpper) :
+                #     d = d-1
+               
+                self.remote.go_forward_distance(d, 20)
+                speed = 20
+            else :
+                self.driveToObject(ball, False, speed)
             # self.rotateUntilZero(ball)
 
             # self.goForwardUntilZero(ball, False)
@@ -262,10 +305,18 @@ class Main:
             self.remote.stop_balls_mec()
             self.remote.stop_tank()
 
+            if(self.deliverOrange and self.orangeBall is None):
+                self.score()
+                self.deliverOrange = False
+
             
             
             count += 1
         self.score()
+        time.sleep(4)
+        if (self.closestBall is not None) :
+            self.consumeClosestBall()
+        self.remote.tank_victory()
 
     
     def goAroundCross(self, object):
@@ -391,22 +442,26 @@ class Main:
             self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, object.x, object.y)
         smallestDistance = distance
 
-        while (self.robot is not None and distance > 8 and distance < smallestDistance+2):
-            angle = getAngle(robot=self.robot, object=object)
-            leftSpeed = speed
-            rightSpeed = speed
-            if (angle > 0):
-                rightSpeed = rightSpeed - (angle/1.2)
-            elif (angle < 0):
-                leftSpeed = leftSpeed - ((-angle)/1.2)
-             
-            self.remote.tank.on(leftSpeed, rightSpeed)
-            distance = getDistance(
-                self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, object.x, object.y)
-            if (distance < smallestDistance):
-                smallestDistance = distance
+        if (distance <= 8) :
+            self.remote.go_forward_distance(5, 20)
+        else :
+            while (self.robot is not None and distance > 8 and distance < smallestDistance+2):
+                angle = getAngle(robot=self.robot, object=object)
+                leftSpeed = speed
+                rightSpeed = speed
+                if (angle > 0):
+                    rightSpeed = rightSpeed - (angle/1.8)
+                elif (angle < 0):
+                    leftSpeed = leftSpeed - ((-angle)/1.8)
+                    
+                self.remote.tank.on(leftSpeed, rightSpeed)
+                distance = getDistance(
+                    self.robot.greenFrame.x if useGreenPlate else self.robot.blueFrame.x, self.robot.greenFrame.y if useGreenPlate else self.robot.blueFrame.y, object.x, object.y)
+                if (distance < smallestDistance):
+                    smallestDistance = distance
         self.remote.stop_tank()
-
+     
+    
     def goForwardUntilZero(self, ball, useGreenPlate):
 
         distance = getDistance(

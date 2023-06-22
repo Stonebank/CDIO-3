@@ -52,7 +52,7 @@ class Remote:
 
     def go_forward_distance(self, distance, speed):
         wheel_size = 17.59 
-        rotations = ((distance+5)/wheel_size)*360
+        rotations = ((distance)/wheel_size)*360
         self.tank.on_for_degrees(speed, speed, rotations)
     
     def drive_to_ball(self, angle, speed):
@@ -79,7 +79,7 @@ class Remote:
             error_margin=3,
         )
     def tank_victory(self):
-        self.ev3dev2_sound.Sound.speak("Victoryyy!")
+        # self.ev3dev2_sound.Sound.speak('Hello')
         self.tank.on_for_rotations(50, -50, 10)
             
 

@@ -11,7 +11,7 @@ from robot import Robot
 
 hsvWhiteBall = {'hmin': 0, 'smin': 0, 'vmin': 198, 'hmax': 179, 'smax': 52, 'vmax': 255}
 hsvOrangeBall = {'hmin': 11, 'smin': 56, 'vmin': 197, 'hmax': 169, 'smax': 255, 'vmax': 255}
-hsvCross = {'hmin': 150, 'smin': 0, 'vmin': 0, 'hmax': 179, 'smax': 255, 'vmax': 255}
+hsvCross = {'hmin': 0, 'smin': 174, 'vmin': 211, 'hmax': 179, 'smax': 255, 'vmax': 255}
 hsvGreen = {'hmin': 52, 'smin': 18, 'vmin': 0, 'hmax': 98, 'smax': 255, 'vmax': 255}
 hsvBlue = {'hmin': 98, 'smin': 61, 'vmin': 0, 'hmax': 159, 'smax': 255, 'vmax': 255}
 
@@ -86,10 +86,10 @@ def detectBalls(previousFrames, robot):
         if len(contours) > 0:
             for contour in contours:
                 area = cv2.contourArea(contour)
-                if area > 100:
+                if area > 20:
                     (x, y, w, h) = cv2.boundingRect(contour)
                     radius = int(w / 2)
-                    if (radius < 11 and radius > 5) or (radius > 13 and radius < 19):
+                    if (radius < 11 and radius >= 3) or (radius > 13 and radius < 19):
                         # if robot is not None and is_point_inside_rectangle((x,y), robot.box)==True:
                         #     continue
                         cv2.circle(frame, (int(x + w / 2), int(y + h / 2)),
@@ -305,54 +305,69 @@ def detectCross(frame) :
         mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     if len(contours) > 0:
-        largest_contour = max(contours, key=cv2.contourArea)
-        rect = cv2.minAreaRect(largest_contour)
-        global rectanglesCross
-        rectanglesCross.append(rect)
-        if (len(rectanglesCross) > 10) :
-            rectanglesCross.pop(0)
-        
-        average_rect = getAverageRect()
-        
-        box = cv2.boxPoints(average_rect)
-        box = np.int0(box)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 200:
+                (x, y, w, h) = cv2.boundingRect(contour)
+                if ( x > 50 and x < 700 and y > 50 and y < 450) :
+                    
+                    # largest_contour = max(contours, key=cv2.contourArea)
+                    # rect = cv2.minAreaRect(largest_contour)
+                    rect = cv2.minAreaRect(contour)
 
-        center = np.mean(box, axis=0)
+                    global rectanglesCross
+                    rectanglesCross.append(rect)
+                    if (len(rectanglesCross) > 10) :
+                        rectanglesCross.pop(0)
+                    
+                    average_rect = getAverageRect()
+                    
+                    box = cv2.boxPoints(average_rect)
+                    box = np.int0(box)
 
-        offsets = [None]*4
-        
-        # Drawing cross lines
-        line_length = 120  # Adjust this value to change the length of the lines
-        angle = average_rect[2]  # Angle of rotation
-        rad_angle = math.radians(angle)  # Convert angle to radians
-        cos_val = math.cos(rad_angle)  # Cosine of angle
-        sin_val = math.sin(rad_angle)  # Sine of angle
-        x1 = int(center[0] - line_length * sin_val)  # Starting x-coordinate of line
-        y1 = int(center[1] + line_length * cos_val)  # Starting y-coordinate of line
-        x2 = int(center[0] + line_length * sin_val)  # Ending x-coordinate of line
-        y2 = int(center[1] - line_length * cos_val)  # Ending y-coordinate of line
-        offsets[0] = (x1, y1)
-        offsets[1] = (x2, y2)
-        cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw first line
-        x1 = int(center[0] - line_length * cos_val)  # Starting x-coordinate of line
-        y1 = int(center[1] - line_length * sin_val)  # Starting y-coordinate of line
-        x2 = int(center[0] + line_length * cos_val)  # Ending x-coordinate of line
-        y2 = int(center[1] + line_length * sin_val)  # Ending y-coordinate of line
-        offsets[2] = (x1, y1)
-        offsets[3] = (x2, y2)
-        cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw second line
+                    center = np.mean(box, axis=0)
 
-        # Drawing box around cross
-        rect_x, rect_y, rect_w, rect_h = cv2.boundingRect(largest_contour)
-        rect_x -= rect_w // 2  # Move top-left corner left by half the width
-        rect_y -= rect_h // 2  # Move top-left corner up by half the height
-        rect_w *= 2  # Double the width
-        rect_h *= 2  # Double the height
-        cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (0, 255, 0), 3)
-        for offset in offsets :
-            cv2.circle(center=offset, thickness=10, radius=0, img=frame, color=(0, 0, 255))
-        # if (rect_h > 148 and rect_h < 175 and rect_w > 148 and rect_w < 175) :
-        return Cross(center[0], center[1], rect_h, rect_w, offsets)
+                    offsets = [None]*4
+                    if (box is not None and center is not None) :
+                        # Drawing cross lines
+                        line_length = 120  # Adjust this value to change the length of the lines
+                        angle = average_rect[2]  # Angle of rotation
+                        rad_angle = math.radians(angle)  # Convert angle to radians
+                        cos_val = math.cos(rad_angle)  # Cosine of angle
+                        sin_val = math.sin(rad_angle)  # Sine of angle
+                        x1 = int(center[0] - line_length * sin_val)  # Starting x-coordinate of line
+                        y1 = int(center[1] + line_length * cos_val)  # Starting y-coordinate of line
+                        x2 = int(center[0] + line_length * sin_val)  # Ending x-coordinate of line
+                        y2 = int(center[1] - line_length * cos_val)  # Ending y-coordinate of line
+                        offsets[0] = (x1, y1)
+                        offsets[1] = (x2, y2)
+                        # cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw first line
+                        x1 = int(center[0] - line_length * cos_val)  # Starting x-coordinate of line
+                        y1 = int(center[1] - line_length * sin_val)  # Starting y-coordinate of line
+                        x2 = int(center[0] + line_length * cos_val)  # Ending x-coordinate of line
+                        y2 = int(center[1] + line_length * sin_val)  # Ending y-coordinate of line
+                        offsets[2] = (x1, y1)
+                        offsets[3] = (x2, y2)
+                        # cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)  # Draw second line
+
+                        # Drawing box around cross
+                        # rect_x, rect_y, rect_w, rect_h = cv2.boundingRect(largest_contour)
+                        rect_x, rect_y, rect_w, rect_h = cv2.boundingRect(contour)
+                        rect_x -= rect_w // 2  # Move top-left corner left by half the width
+                        rect_y -= rect_h // 2  # Move top-left corner up by half the height
+                        rect_w *= 2  # Double the width
+                        rect_h *= 2  # Double the height
+                        # cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (0, 255, 0), 3)
+                        # for offset in offsets :
+                        #     cv2.circle(center=offset, thickness=10, radius=0, img=frame, color=(0, 0, 255))
+                        # if (rect_h > 148 and rect_h < 175 and rect_w > 148 and rect_w < 175) :
+                        return Cross(center[0], center[1], rect_h, rect_w, rect_x, rect_y, offsets)
+
+def drawCross(frame, cross) : 
+    cv2.line(frame, (cross.offsets[0][0], cross.offsets[0][1]), (cross.offsets[1][0], cross.offsets[1][1]), (0, 255, 0), 3)  # Draw first line
+    cv2.line(frame, (cross.offsets[2][0], cross.offsets[2][1]), (cross.offsets[3][0], cross.offsets[3][1]), (0, 255, 0), 3)  # Draw second line
+    cv2.rectangle(frame, (cross.rect_x, cross.rect_y), (cross.rect_x+cross.rect_w, cross.rect_y+cross.rect_h), (0, 255, 0), 3)
 
 def getAverageRect() : 
     sumA1 = 0
@@ -372,8 +387,8 @@ def getAverageRect() :
 
 
 def lineIntersectsCross(robot, ball, cross):
-    half_w = cross.width / 2
-    half_h = cross.height / 2
+    half_w = cross.rect_w / 2
+    half_h = cross.rect_h / 2
     top_left = (int(cross.x - half_w), int(cross.y - half_h))
     top_right = (int(cross.x + half_w), int(cross.y - half_h))
     bottom_left = (int(cross.x - half_w), int(cross.y + half_h))
