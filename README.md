@@ -7,11 +7,16 @@ The objective of the project is to design a robot that can automatically travers
 TODO
 
 # Prerequisites
+
 TODO
 
 # Technology 
 
-YET TO BE DECIDED
+For this project we've went with the following technology:
+
+* Python
+* EV3 lego API for communicating with the EV3 robot
+* OpenCV for the image processing 
 
 # Developer team
 
